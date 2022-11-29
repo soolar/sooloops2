@@ -1,14 +1,20 @@
-import { CombatStrategy, step } from "grimoire-kolmafia";
+import { step } from "grimoire-kolmafia";
 import {
   buy,
   cliExecute,
+  Coinmaster,
   getWorkshed,
   haveEffect,
   hippyStoneBroken,
   inebrietyLimit,
+  isAccessible,
+  Item,
+  itemAmount,
   myAdventures,
-  myAscensions,
+  myFamiliar,
   myInebriety,
+  sellPrice,
+  sellsItem,
   toInt,
   use,
   visitUrl,
@@ -16,24 +22,103 @@ import {
 import {
   $class,
   $effect,
+  $effects,
   $familiar,
   $item,
-  $location,
+  $items,
   ascend,
   ChateauMantegna,
   get,
   have,
   haveInCampground,
   Lifestyle,
-  Macro,
   Paths,
   prepareAscension,
-  set,
 } from "libram";
 import { drive } from "libram/dist/resources/2017/AsdonMartin";
-import { getCurrentLeg, Leg, Quest } from "./structure";
-import { args } from "../main";
-import { canEat, pvp } from "./aftercore";
+import { getCurrentLeg, Leg, Quest, Task } from "./structure";
+import { breakfast, canEat, duplicate, pvp, stooperDrunk } from "./aftercore";
+import { voaSober } from "../constants";
+
+function cleanup(after: string[]): Task[] {
+  const oneDayTickets = $items`one-day ticket to The Glaciest, one-day ticket to Dinseylandfill, one-day ticket to That 70s Volcano, Merc Core deployment orders, one-day ticket to Spring Break Beach`;
+  const ticketSeller = (ticket: Item) =>
+    Coinmaster.all().find((coinmaster) => sellsItem(coinmaster, ticket));
+  const ticketsToBuy = (ticket: Item) => {
+    const seller = ticketSeller(ticket);
+    if (seller && isAccessible(seller)) {
+      return Math.floor(itemAmount(seller.item) / sellPrice(seller, ticket));
+    }
+    return 0;
+  };
+
+  const barrels = $items`little firkin, normal barrel, big tun, weathered barrel, dusty barrel, disintegrating barrel, moist barrel, rotting barrel, mouldering barrel, barnacled barrel`;
+  const barrelCount = () =>
+    barrels.map((barrel) => itemAmount(barrel)).reduce((total, current) => total + current, 0);
+
+  const powersAndNuggies = $items`twinkly powder, hot powder, cold powder, spooky powder, stench powder, sleaze powder, twinkly nuggets, hot nuggets, cold nuggets, spooky nuggets, stench nuggets, sleaze nuggets`;
+
+  return [
+    {
+      name: "Buy One-Day Tickets",
+      completed: () => oneDayTickets.filter((ticket) => ticketsToBuy(ticket) > 0).length > 0,
+      after: after,
+      do: () =>
+        oneDayTickets
+          .filter((ticket) => ticketsToBuy(ticket) > 0)
+          .forEach((ticket) => {
+            const seller = ticketSeller(ticket);
+            if (seller) {
+              buy(seller, ticketsToBuy(ticket), ticket);
+            }
+          }),
+      limit: { tries: 1 },
+    },
+    {
+      name: "Smash Barrels",
+      completed: () => barrelCount() === 0,
+      after: after,
+      do: (): void => {
+        if (barrelCount() > 1) {
+          const firstBarrel = barrels.find((barrel) => itemAmount(barrel) > 0);
+          if (firstBarrel) {
+            visitUrl(`inv_use.php?pwd&whichitem=${toInt(firstBarrel)}&choice=1`);
+            while (barrelCount() > 1) {
+              visitUrl("choice.php?pwd&whichchoice=1101&option=2");
+            }
+          }
+        }
+        if (barrelCount() === 1) {
+          const remainingBarrel = barrels.find((barrel) => itemAmount(barrel) > 0);
+          if (remainingBarrel) {
+            use(1, remainingBarrel);
+          }
+        }
+      },
+      limit: { tries: 1 },
+    },
+    {
+      name: "Wad Up",
+      completed: () => powersAndNuggies.filter((it) => itemAmount(it) >= 5).length === 0,
+      after: after,
+      prepare: () => {
+        // Finish unlocking guild
+        visitUrl("guild.php?place=challenge");
+        visitUrl("guild.php?place=malus");
+      },
+      do: () =>
+        powersAndNuggies.forEach((it) => {
+          // Can't use .filter because this might change as a result of prior smashing
+          if (itemAmount(it) >= 5) {
+            visitUrl(
+              `guild.php?action=malussmash&pwd&whichitem=${toInt(it)}&quantity=1&smashall=1`
+            );
+          }
+        }),
+      limit: { tries: 1 },
+    },
+  ];
+}
 
 export const CasualQuest: Quest = {
   name: "Casual",
@@ -67,16 +152,32 @@ export const CasualQuest: Quest = {
     },
     {
       name: "Break Stone",
-      completed: () => hippyStoneBroken() || !args.pvp,
+      completed: () => hippyStoneBroken(),
       do: (): void => {
-        visitUrl("peevpee.php?action=smashstone&pwd&confirm=on", true);
-        visitUrl("peevpee.php?place=fight");
+        const smashText = visitUrl("peevpee.php?action=smashstone&pwd&confirm=on", true);
+        if (smashText.indexOf("Pledge allegiance to") >= 0) {
+          visitUrl("peevpee.php?action=pledge&place=fight&pwd");
+        }
       },
       limit: { tries: 1 },
     },
     {
+      name: "Guild Leader",
+      after: ["Ascend"],
+      completed: () => get("questG09Muscle") !== "unstarted",
+      do: () => visitUrl("guild.php?place=challenge"),
+      limit: { tries: 1 },
+    },
+    {
+      name: "Meat Golem",
+      after: ["Ascend"],
+      completed: () => haveInCampground($item`meat golem`),
+      do: () => use(1, $item`meat golem`),
+      limit: { tries: 1 },
+    },
+    {
       name: "Run",
-      after: ["Ascend", "Break Stone"],
+      after: ["Ascend", "Break Stone", "Guild Leader", "Meat Golem"],
       completed: () => step("questL13Final") > 11,
       do: () => cliExecute("loopcasual fluffers=false stomach=10"),
       limit: { tries: 1 },
@@ -93,28 +194,10 @@ export const CasualQuest: Quest = {
       },
       limit: { tries: 1 },
     },
-    {
-      name: "Duplicate",
-      after: ["Ascend", "Run"],
-      ready: () => have(args.duplicate),
-      completed: () => get("lastDMTDuplication") === myAscensions(),
-      prepare: () => set("choiceAdventure1125", `1&iid=${toInt(args.duplicate)}`),
-      do: $location`The Deep Machine Tunnels`,
-      choices: { 1119: 4 },
-      combat: new CombatStrategy().macro(new Macro().attack().repeat()),
-      outfit: { familiar: $familiar`Machine Elf`, modifier: "muscle" },
-      limit: { tries: 6 },
-    },
-    {
-      name: "Breakfast",
-      after: ["Ascend", "Run"],
-      completed: () => get("breakfastCompleted"),
-      do: () => cliExecute("breakfast"),
-      limit: { tries: 1 },
-    },
+    ...breakfast(["Ascend", "Run"]),
     {
       name: "Garbo",
-      after: ["Ascend", "Run", "Workshed", "Duplicate", "Breakfast"],
+      after: ["Ascend", "Run", "Workshed", "Breakfast"],
       completed: () => (myAdventures() === 0 && !canEat()) || myInebriety() > inebrietyLimit(),
       do: (): void => {
         if (have($item`can of Rain-Doh`) && !have($item`Rain-Doh blue balls`))
@@ -132,13 +215,25 @@ export const CasualQuest: Quest = {
       limit: { tries: 3 },
     },
     {
-      name: "Nightcap",
+      name: "Stooper",
       after: ["Ascend", "Run", "Garbo", "Wish"],
-      completed: () => myInebriety() > inebrietyLimit(),
-      do: () => cliExecute("CONSUME NIGHTCAP"),
+      do: () => cliExecute("drink stillsuit distillate"),
+      completed: () => stooperDrunk(),
+      outfit: { familiar: $familiar`Stooper` },
+      effects: $effects`Ode to Booze`,
       limit: { tries: 1 },
     },
-    ...pvp(["Nightcap"]),
+    {
+      name: "Nightcap",
+      after: ["Ascend", "Run", "Garbo", "Wish"],
+      completed: () =>
+        myInebriety() > inebrietyLimit() + (myFamiliar() !== $familiar`Stooper` ? 1 : 0),
+      do: () => cliExecute(`CONSUME NIGHTCAP VALUE ${voaSober}`),
+      limit: { tries: 1 },
+    },
+    ...duplicate(["Nightcap"]),
+    ...pvp(["Nightcap"], false),
+    ...cleanup(["Nightcap"]),
     {
       name: "Chateau Sleep",
       after: ["Ascend", "Nightcap", "Fights"],
@@ -151,14 +246,13 @@ export const CasualQuest: Quest = {
       name: "Sleep",
       completed: () => haveInCampground($item`clockwork maid`),
       after: ["Ascend", "Nightcap", "Fights"],
-      acquire: [{ item: $item`burning cape`, optional: true }],
       do: (): void => {
         if (!haveInCampground($item`clockwork maid`)) {
           if (!have($item`clockwork maid`)) buy(1, $item`clockwork maid`, 48000);
           use($item`clockwork maid`);
         }
       },
-      outfit: { modifier: "adv", familiar: $familiar`Trick-or-Treating Tot` },
+      outfit: { modifier: "adv,0.7fites", familiar: $familiar`Left-Hand Man` },
       limit: { tries: 1 },
     },
   ],

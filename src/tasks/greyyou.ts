@@ -10,7 +10,6 @@ import {
   hippyStoneBroken,
   itemAmount,
   myAdventures,
-  myAscensions,
   myClass,
   myLevel,
   myStorageMeat,
@@ -18,7 +17,6 @@ import {
   restoreMp,
   runChoice,
   storageAmount,
-  toInt,
   totalTurnsPlayed,
   use,
   visitUrl,
@@ -43,12 +41,10 @@ import {
   Paths,
   prepareAscension,
   RetroCape,
-  set,
   SourceTerminal,
 } from "libram";
 import { getCurrentLeg, Leg, Quest, Task } from "./structure";
-import { args } from "../main";
-import { garboAscend, pvp } from "./aftercore";
+import { breakfast, garboAscend, pvp } from "./aftercore";
 
 const gear: Task[] = [
   {
@@ -120,18 +116,20 @@ export const GyouQuest: Quest = {
           $item`astral six-pack`,
           $item`astral pistol`
         );
-        if (visitUrl("main.php").includes("somewhat-human-shaped mass of grey goo nanites"))
-          runChoice(-1);
+        if (visitUrl("choice.php").includes("somewhat-human-shaped mass of grey goo nanites"))
+          runChoice(1);
       },
       limit: { tries: 1 },
     },
     ...gear,
     {
       name: "Break Stone",
-      completed: () => hippyStoneBroken() || !args.pvp,
+      completed: () => hippyStoneBroken(),
       do: (): void => {
-        visitUrl("peevpee.php?action=smashstone&pwd&confirm=on", true);
-        visitUrl("peevpee.php?place=fight");
+        const smashText = visitUrl("peevpee.php?action=smashstone&pwd&confirm=on", true);
+        if (smashText.indexOf("Pledge allegiance to") >= 0) {
+          visitUrl("peevpee.php?action=pledge&place=fight&pwd");
+        }
       },
       limit: { tries: 1 },
     },
@@ -167,8 +165,8 @@ export const GyouQuest: Quest = {
           const modifiers = [];
           if (get("latteUnlocks").includes("wing")) modifiers.push("wing");
           if (get("latteUnlocks").includes("cajun")) modifiers.push("cajun");
-          modifiers.push("cinnamon", "pumpkin", "vanilla");
-          cliExecute(`latte refill ${modifiers.slice(0, 3).join(" ")}`); // Always unlocked
+          modifiers.push("cinnamon", "pumpkin", "vanilla"); // Always unlocked
+          cliExecute(`latte refill ${modifiers.slice(0, 3).join(" ")}`);
         }
 
         // Swap to asdon when all extrovermectins are done
@@ -221,7 +219,7 @@ export const GyouQuest: Quest = {
     {
       name: "Pull All",
       after: ["Ascend", "In-Run Farm Initial"],
-      completed: () => myStorageMeat() === 0 && storageAmount($item`festive warbear bank`) === 0, // arbitrary item,
+      completed: () => myStorageMeat() === 0 && storageAmount($item`Law of Averages`) === 0, // arbitrary item,
       do: (): void => {
         cliExecute("pull all");
         cliExecute("refresh all");
@@ -290,27 +288,9 @@ export const GyouQuest: Quest = {
       do: () => cliExecute("loopcasual goal=level"),
       limit: { tries: 1 },
     },
-    {
-      name: "Duplicate",
-      after: ["Ascend", "Prism", "Pull All", "Level"],
-      ready: () => have(args.duplicate),
-      completed: () => get("lastDMTDuplication") === myAscensions(),
-      prepare: () => set("choiceAdventure1125", `1&iid=${toInt(args.duplicate)}`),
-      do: $location`The Deep Machine Tunnels`,
-      choices: { 1119: 4 },
-      combat: new CombatStrategy().macro(new Macro().attack().repeat()),
-      outfit: { familiar: $familiar`Machine Elf`, modifier: "muscle" },
-      limit: { tries: 6 },
-    },
-    {
-      name: "Breakfast",
-      after: ["Ascend", "Prism", "Pull All", "Level"],
-      completed: () => get("breakfastCompleted"),
-      do: () => cliExecute("breakfast"),
-      limit: { tries: 1 },
-    },
+    ...breakfast(["Ascend", "Prism", "Pull All", "Level"]),
     ...garboAscend(
-      ["Ascend", "Prism", "Pull All", "Level", "Duplicate", "Breakfast"],
+      ["Ascend", "Prism", "Pull All", "Level", "Breakfast"],
       "garbo yachtzeechain ascend"
     ),
     ...pvp(["Overdrunk"]),

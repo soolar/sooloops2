@@ -1,5 +1,4 @@
-import { Item, print } from "kolmafia";
-import { $item } from "libram";
+import { print } from "kolmafia";
 import { Args, getTasks } from "grimoire-kolmafia";
 import { AftercoreQuest } from "./tasks/aftercore";
 import { GyouQuest } from "./tasks/greyyou";
@@ -10,12 +9,6 @@ export const args = Args.create("loop", "A script for a full loop.", {
   actions: Args.number({
     help: "Maximum number of actions to perform, if given. Can be used to execute just a few steps at a time.",
   }),
-  duplicate: Args.custom(
-    { help: "Item to duplicate in the Deep Machine Tunnels.", default: $item`very fancy whiskey` },
-    Item.get,
-    "ITEM"
-  ),
-  pvp: Args.flag({ help: "If true, break hippy stone and do pvp.", default: false }),
   abort: Args.string({
     help: "If given, abort during the prepare() step for the task with matching name.",
   }),

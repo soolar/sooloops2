@@ -136,7 +136,7 @@ const specialValueLookup = new Map<Item, () => number>([
         ...$items`Alewife™ Ale, bazookafish bubble gum, beefy fish meat, eel battery, glistening fish meat, ink bladder, pufferfish spine, shark cartilage, slick fish meat, slug of rum, slug of shochu, slug of vodka, temporary teardrop tattoo`
       ),
   ],
-  [$item`fake hand`, () => 50000],
+  [$item`fake hand`, () => 52069],
 ]);
 
 function getHistoricalSaleValue(item: Item) {
@@ -309,7 +309,9 @@ function printProfitSegment(key: string, record: ProfitRecord, color: string) {
   print(
     `${key}: ${numberWithCommas(record.meat)} meat + ${numberWithCommas(record.items)} items (${
       record.turns
-    } turns + ${numberWithCommas(record.hours)} hours)`,
+    } turns + ${numberWithCommas(record.hours)} hours, total ${numberWithCommas(
+      record.meat + record.items
+    )})`,
     color
   );
 }
