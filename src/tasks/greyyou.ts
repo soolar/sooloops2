@@ -44,7 +44,8 @@ import {
   SourceTerminal,
 } from "libram";
 import { getCurrentLeg, Leg, Quest, Task } from "./structure";
-import { breakfast, garboAscend, pvp } from "./aftercore";
+import { breakfast, garbo, pvp } from "./aftercore";
+import { isHalloween } from "../constants";
 
 const gear: Task[] = [
   {
@@ -289,9 +290,11 @@ export const GyouQuest: Quest = {
       limit: { tries: 1 },
     },
     ...breakfast(["Ascend", "Prism", "Pull All", "Level"]),
-    ...garboAscend(
+    ...garbo(
       ["Ascend", "Prism", "Pull All", "Level", "Breakfast"],
-      "garbo yachtzeechain ascend"
+      true,
+      isHalloween ? "garboween ascend" : "garbo yachtzeechain ascend",
+      isHalloween ? "garboween ascend" : "garbo ascend"
     ),
     ...pvp(["Overdrunk"]),
   ],

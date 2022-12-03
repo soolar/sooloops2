@@ -37,8 +37,8 @@ import {
 } from "libram";
 import { drive } from "libram/dist/resources/2017/AsdonMartin";
 import { getCurrentLeg, Leg, Quest, Task } from "./structure";
-import { breakfast, canEat, duplicate, pvp, stooperDrunk } from "./aftercore";
-import { voaSober } from "../constants";
+import { breakfast, canEat, duplicate, garbo, pvp, stooperDrunk } from "./aftercore";
+import { isHalloween, voaSober } from "../constants";
 
 function cleanup(after: string[]): Task[] {
   const oneDayTickets = $items`one-day ticket to The Glaciest, one-day ticket to Dinseylandfill, one-day ticket to That 70s Volcano, Merc Core deployment orders, one-day ticket to Spring Break Beach`;
@@ -195,48 +195,17 @@ export const CasualQuest: Quest = {
       limit: { tries: 1 },
     },
     ...breakfast(["Ascend", "Run"]),
-    {
-      name: "Garbo",
-      after: ["Ascend", "Run", "Workshed", "Breakfast"],
-      completed: () => (myAdventures() === 0 && !canEat()) || myInebriety() > inebrietyLimit(),
-      do: (): void => {
-        if (have($item`can of Rain-Doh`) && !have($item`Rain-Doh blue balls`))
-          use($item`can of Rain-Doh`);
-        cliExecute("garbo yachtzeechain");
-      },
-      limit: { tries: 1 },
-      tracking: "Garbo",
-    },
-    {
-      name: "Wish",
-      after: [],
-      completed: () => get("_genieWishesUsed") >= 3 || !have($item`genie bottle`),
-      do: () => cliExecute(`genie wish for more wishes`),
-      limit: { tries: 3 },
-    },
-    {
-      name: "Stooper",
-      after: ["Ascend", "Run", "Garbo", "Wish"],
-      do: () => cliExecute("drink stillsuit distillate"),
-      completed: () => stooperDrunk(),
-      outfit: { familiar: $familiar`Stooper` },
-      effects: $effects`Ode to Booze`,
-      limit: { tries: 1 },
-    },
-    {
-      name: "Nightcap",
-      after: ["Ascend", "Run", "Garbo", "Wish"],
-      completed: () =>
-        myInebriety() > inebrietyLimit() + (myFamiliar() !== $familiar`Stooper` ? 1 : 0),
-      do: () => cliExecute(`CONSUME NIGHTCAP VALUE ${voaSober}`),
-      limit: { tries: 1 },
-    },
-    ...duplicate(["Nightcap"]),
-    ...pvp(["Nightcap"], false),
-    ...cleanup(["Nightcap"]),
+    ...garbo(
+      ["Ascend", "Run", "Workshed", "Breakfast"],
+      false,
+      isHalloween ? "garboween" : "garbo yachtzeechain",
+      isHalloween ? "garboween" : undefined
+    ),
+    ...pvp(["Overdrink"], false),
+    ...cleanup(["Overdrink"]),
     {
       name: "Chateau Sleep",
-      after: ["Ascend", "Nightcap", "Fights"],
+      after: ["Ascend", "Overdrink", "Fights"],
       completed: () =>
         !ChateauMantegna.have() || ChateauMantegna.getCeiling() === "artificial skylight",
       do: () => ChateauMantegna.changeCeiling("artificial skylight"),
@@ -245,7 +214,7 @@ export const CasualQuest: Quest = {
     {
       name: "Sleep",
       completed: () => haveInCampground($item`clockwork maid`),
-      after: ["Ascend", "Nightcap", "Fights"],
+      after: ["Ascend", "Overdrink", "Fights"],
       do: (): void => {
         if (!haveInCampground($item`clockwork maid`)) {
           if (!have($item`clockwork maid`)) buy(1, $item`clockwork maid`, 48000);

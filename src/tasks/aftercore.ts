@@ -41,7 +41,7 @@ import {
   set,
   uneffect,
 } from "libram";
-import { acceptablePvpStances, melfDupeItem, voaDrunk } from "../constants";
+import { acceptablePvpStances, isHalloween, melfDupeItem, voaDrunk } from "../constants";
 import { getCurrentLeg, Leg, Quest, Task } from "./structure";
 
 export function canEat(): boolean {
@@ -131,23 +131,26 @@ export function duplicate(after: string[]): Task[] {
   ];
 }
 
-export function garboAscend(after: string[], garbo: string): Task[] {
+export function garbo(after: string[], ascending: boolean, sober: string, drunk?: string): Task[] {
   return [
     {
-      name: "Garbo",
+      name: "Rain-Doh",
       after: after,
+      completed: () => have($item`Rain-Doh blue balls`) || !have($item`can of Rain-Doh`),
+      do: () => use($item`can of Rain-Doh`),
+      limit: { tries: 1 },
+    },
+    {
+      name: "Garbo",
+      after: [...after, "Rain-Doh"],
       completed: () => (myAdventures() === 0 && !canEat()) || stooperDrunk(),
-      do: () => {
-        if (have($item`can of Rain-Doh`) && !have($item`Rain-Doh blue balls`))
-          use($item`can of Rain-Doh`);
-        cliExecute(garbo);
-      },
+      do: () => cliExecute(sober),
       limit: { tries: 1 },
       tracking: "Garbo",
     },
     {
       name: "Wish",
-      after: [...after],
+      after: [...after, "Garbo"],
       completed: () => get("_genieWishesUsed") >= 3 || !have($item`genie bottle`),
       do: () => cliExecute(`genie wish for more wishes`),
       limit: { tries: 3 },
@@ -161,24 +164,29 @@ export function garboAscend(after: string[], garbo: string): Task[] {
       effects: $effects`Ode to Booze`,
       limit: { tries: 1 },
     },
-    {
-      name: "Caldera",
-      after: [...after, "Stooper"],
-      acquire: [{ item: $item`heat-resistant sheet metal`, price: 5000, optional: true }],
-      prepare: () => useSkill($skill`Cannelloni Cocoon`),
-      do: $location`The Bubblin' Caldera`,
-      completed: () =>
-        $location`The Bubblin' Caldera`.turnsSpent >= 7 ||
-        $location`The Bubblin' Caldera`.noncombatQueue.includes("Lava Dogs"),
-      combat: new CombatStrategy().macro(new Macro().attack().repeat()),
-      outfit: { modifier: "muscle", familiar: $familiar`Stooper` },
-      limit: { tries: 10 }, // Clear intro adventure
-    },
+    ...(ascending
+      ? [
+          {
+            name: "Caldera",
+            after: [...after, "Stooper"],
+            acquire: [{ item: $item`heat-resistant sheet metal`, price: 5000, optional: true }],
+            prepare: () => useSkill($skill`Cannelloni Cocoon`),
+            do: $location`The Bubblin' Caldera`,
+            completed: () =>
+              $location`The Bubblin' Caldera`.turnsSpent >= 7 ||
+              $location`The Bubblin' Caldera`.noncombatQueue.includes("Lava Dogs"),
+            combat: new CombatStrategy().macro(new Macro().attack().repeat()),
+            outfit: { modifier: "muscle", familiar: $familiar`Stooper` },
+            limit: { tries: 10 }, // Clear intro adventure
+          },
+        ]
+      : []),
     {
       name: "Overdrink",
       after: [...after, "Stooper"],
       do: () => cliExecute(`CONSUME NIGHTCAP NOMEAT VALUE ${voaDrunk}`),
-      completed: () => myInebriety() > inebrietyLimit(),
+      completed: () =>
+        myInebriety() > inebrietyLimit() + (myFamiliar() !== $familiar`Stooper` ? 1 : 0),
       limit: { tries: 1 },
     },
     ...duplicate([...after, "Overdrink"]),
@@ -197,15 +205,19 @@ export function garboAscend(after: string[], garbo: string): Task[] {
       },
       limit: { tries: 1 },
     },
-    {
-      name: "Overdrunk",
-      after: [...after, "Overdrink", "Duplicate"],
-      prepare: () => uneffect($effect`Drenched in Lava`),
-      completed: () => myAdventures() === 0 && myInebriety() > inebrietyLimit(),
-      do: () => cliExecute("garbo ascend"),
-      limit: { tries: 1 },
-      tracking: "Garbo",
-    },
+    ...(drunk
+      ? [
+          {
+            name: "Overdrunk",
+            after: [...after, "Overdrink", "Duplicate"],
+            prepare: () => uneffect($effect`Drenched in Lava`),
+            completed: () => myAdventures() === 0 && myInebriety() > inebrietyLimit(),
+            do: () => cliExecute(drunk),
+            limit: { tries: 1 },
+            tracking: "Garbo",
+          },
+        ]
+      : []),
   ];
 }
 
@@ -260,7 +272,12 @@ export const AftercoreQuest: Quest = {
   completed: () => getCurrentLeg() > Leg.Aftercore,
   tasks: [
     ...breakfast([]),
-    ...garboAscend(["Breakfast"], "garbo yachtzeechain ascend"),
+    ...garbo(
+      ["Breakfast"],
+			true,
+      isHalloween ? "garboween ascend" : "garbo yachtzeechain ascend",
+      isHalloween ? "garboween ascend" : "garbo ascend"
+    ),
     ...pvp(["Overdrunk"]),
   ],
 };
