@@ -61,7 +61,7 @@ function cleanup(after: string[]): Task[] {
   return [
     {
       name: "Buy One-Day Tickets",
-      completed: () => oneDayTickets.filter((ticket) => ticketsToBuy(ticket) > 0).length > 0,
+      completed: () => oneDayTickets.filter((ticket) => ticketsToBuy(ticket) > 0).length === 0,
       after: after,
       do: () =>
         oneDayTickets

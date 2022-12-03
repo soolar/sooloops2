@@ -221,7 +221,7 @@ export function pvp(after: string[], ascend = true): Task[] {
     if (pvpAttacksLeft() === 0) {
       return 0;
     }
-    maximize("adv,0.7fites,familiar Left-Hand Man,-tie", true);
+    maximize("adv,0.7fites,switch Left-Hand Man,-tie", true);
     return Math.max(
       pvpAttacksLeft() + 10 + numericModifier("Generated:_spec", "PvP Fights") - 100,
       0
