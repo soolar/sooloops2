@@ -274,7 +274,7 @@ export const AftercoreQuest: Quest = {
     ...breakfast([]),
     ...garbo(
       ["Breakfast"],
-			true,
+      true,
       isHalloween ? "garboween ascend" : "garbo yachtzeechain ascend",
       isHalloween ? "garboween ascend" : "garbo ascend"
     ),
