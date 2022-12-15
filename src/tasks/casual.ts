@@ -198,7 +198,7 @@ export const CasualQuest: Quest = {
     ...garbo(
       ["Ascend", "Run", "Workshed", "Breakfast"],
       false,
-      isHalloween ? "garboween" : "garbo yachtzeechain",
+      isHalloween ? "garboween" : "railo",
       isHalloween ? "garboween" : undefined
     ),
     ...pvp(["Overdrink"], false),
