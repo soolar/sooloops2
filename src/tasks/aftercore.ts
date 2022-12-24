@@ -7,7 +7,6 @@ import {
   currentPvpStances,
   formatDateTime,
   fullnessLimit,
-  handlingChoice,
   hippyStoneBroken,
   inebrietyLimit,
   maximize,
@@ -21,8 +20,6 @@ import {
   putCloset,
   putShop,
   pvpAttacksLeft,
-  runChoice,
-  runCombat,
   spleenLimit,
   takeCloset,
   todayToString,
@@ -144,15 +141,8 @@ export function garbo(after: string[], ascending: boolean, sober: string, drunk?
       limit: { tries: 1 },
     },
     {
-      name: "Diet",
-      after: [...after],
-      completed: () => !canEat() || stooperDrunk(),
-      do: () => cliExecute("CONSUME ALL NOMEAT VALUE 10000"),
-      limit: { tries: 1 },
-    },
-    {
       name: "Garbo",
-      after: [...after, "Rain-Doh", "Diet"],
+      after: [...after, "Rain-Doh"],
       completed: () => (myAdventures() === 0 && !canEat()) || stooperDrunk(),
       do: () => cliExecute(sober),
       limit: { tries: 1 },
@@ -194,7 +184,7 @@ export function garbo(after: string[], ascending: boolean, sober: string, drunk?
     {
       name: "Overdrink",
       after: [...after, "Stooper"],
-      do: () => cliExecute(`CONSUME NIGHTCAP NOMEAT VALUE 10000`),
+      do: () => cliExecute(`CONSUME NIGHTCAP NOMEAT VALUE ${voaDrunk}`),
       completed: () =>
         myInebriety() > inebrietyLimit() + (myFamiliar() !== $familiar`Stooper` ? 1 : 0),
       limit: { tries: 1 },
@@ -285,8 +275,8 @@ export const AftercoreQuest: Quest = {
     ...garbo(
       ["Breakfast"],
       true,
-      isHalloween ? "garboween ascend" : "railo ascend",
-      isHalloween ? "garboween ascend" : "railo ascend"
+      isHalloween ? "garboween ascend" : "garbo yachtzeechain ascend",
+      isHalloween ? "garboween ascend" : "garbo ascend"
     ),
     ...pvp(["Overdrunk"]),
   ],

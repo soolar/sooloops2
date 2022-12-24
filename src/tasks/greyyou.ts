@@ -7,7 +7,6 @@ import {
   descToItem,
   getFuel,
   getWorkshed,
-  handlingChoice,
   hippyStoneBroken,
   itemAmount,
   myAdventures,
@@ -17,7 +16,6 @@ import {
   myTurncount,
   restoreMp,
   runChoice,
-  runCombat,
   storageAmount,
   totalTurnsPlayed,
   use,
@@ -43,7 +41,6 @@ import {
   Paths,
   prepareAscension,
   RetroCape,
-  set,
   SourceTerminal,
 } from "libram";
 import { getCurrentLeg, Leg, Quest, Task } from "./structure";
@@ -51,6 +48,31 @@ import { breakfast, garbo, pvp } from "./aftercore";
 import { isHalloween } from "../constants";
 
 const gear: Task[] = [
+  {
+    name: "Pants",
+    after: [],
+    completed: () => have($item`pantogram pants`),
+    do: () => {
+      if (step("questM05Toot") === -1) visitUrl("council.php");
+      if (step("questM05Toot") === 0) visitUrl("tutorial.php?action=toot");
+      if (have($item`letter from King Ralph XI`)) use($item`letter from King Ralph XI`);
+      if (have($item`pork elf goodies sack`)) use($item`pork elf goodies sack`);
+      if (!have($item`porquoise`)) {
+        if (storageAmount($item`porquoise`) === 0) buyUsingStorage($item`porquoise`);
+        cliExecute("pull 1 porquoise");
+      }
+      Pantogram.makePants(
+        "Muscle",
+        "Stench Resistance: 2",
+        "Maximum MP: 20",
+        "Combat Rate: 5",
+        "Meat Drop: 60"
+      );
+      autosell($item`hamethyst`, itemAmount($item`hamethyst`));
+      autosell($item`baconstone`, itemAmount($item`baconstone`));
+    },
+    limit: { tries: 1 },
+  },
   {
     name: "Lucky Gold Ring",
     after: [],
@@ -61,37 +83,8 @@ const gear: Task[] = [
   {
     name: "Pointer Finger",
     after: [],
-    completed: () => have($item`mafia thumb ring`),
-    do: () => cliExecute("pull mafia thumb ring"),
-    limit: { tries: 1 },
-  },
-  {
-    name: "Harness",
-    after: [],
-    // eslint-disable-next-line libram/verify-constants
-    completed: () => have($item`Trainbot harness`),
-    do: () => cliExecute("pull Trainbot harness"),
-    limit: { tries: 1 },
-  },
-  {
-    name: "Crown",
-    after: [],
-    completed: () => have($item`Crown of Thrones`),
-    do: () => cliExecute("pull Crown of Thrones"),
-    limit: { tries: 1 },
-  },
-  {
-    name: "Diaper",
-    after: [],
-    completed: () => have($item`repaid diaper`),
-    do: () => cliExecute("pull repaid diaper"),
-    limit: { tries: 1 },
-  },
-  {
-    name: "Specs",
-    after: [],
-    completed: () => have($item`Mr. Cheeng's spectacles`),
-    do: () => cliExecute("pull Mr. Cheeng's spectacles"),
+    completed: () => have($item`mafia pointer finger ring`),
+    do: () => cliExecute("pull mafia pointer finger ring"),
     limit: { tries: 1 },
   },
   {
@@ -154,17 +147,29 @@ export const GyouQuest: Quest = {
       name: "In-Run Farm Initial",
       after: ["Ascend", "Run", ...gear.map((task) => task.name)],
       completed: () => myTurncount() >= 1000,
-      do: (): void => {
-        cliExecute("ashq import <bestbjorn.ash>; enthrone_familiar(get_best_bjorn());");
-        visitUrl("adventure.php?snarfblat=559");
-        if (handlingChoice()) {
-          runChoice(2);
-        } else {
-          runCombat();
-        }
-      },
+      do: $location`Barf Mountain`,
+      acquire: [{ item: $item`wad of used tape` }],
       prepare: (): void => {
-        cliExecute("ccs slap");
+        RetroCape.tuneToSkill($skill`Precision Shot`);
+
+        if (have($item`How to Avoid Scams`)) ensureEffect($effect`How to Scam Tourists`);
+
+        // Use only the first source terminal enhance, save the others for aftercore
+        if (get("_sourceTerminalEnhanceUses") === 0) SourceTerminal.enhance($effect`meat.enh`);
+
+        // Prepare latte
+        if (
+          have($item`latte lovers member's mug`) &&
+          !get("latteModifier").includes("Meat Drop: 40") &&
+          get("_latteRefillsUsed") < 2
+        ) {
+          const modifiers = [];
+          if (get("latteUnlocks").includes("wing")) modifiers.push("wing");
+          if (get("latteUnlocks").includes("cajun")) modifiers.push("cajun");
+          modifiers.push("cinnamon", "pumpkin", "vanilla"); // Always unlocked
+          cliExecute(`latte refill ${modifiers.slice(0, 3).join(" ")}`);
+        }
+
         // Swap to asdon when all extrovermectins are done
         if (
           have($item`Asdon Martin keyfob`) &&
@@ -173,23 +178,42 @@ export const GyouQuest: Quest = {
         ) {
           use($item`Asdon Martin keyfob`);
         }
+
+        // Prepare Asdon buff
+        if (AsdonMartin.installed() && !have($effect`Driving Observantly`)) {
+          if (getFuel() < 37 && itemAmount($item`wad of dough`) < 8) {
+            // Get more wads of dough. We must do this ourselves since
+            // retrieveItem($item`loaf of soda bread`) in libram will not
+            // consider all-purpose flower.
+            buy($item`all-purpose flower`);
+            use($item`all-purpose flower`);
+          }
+          AsdonMartin.drive(AsdonMartin.Driving.Observantly);
+        }
       },
       post: getExtros,
       outfit: {
-        familiar: $familiar`Temporal Riftlet`,
-        // eslint-disable-next-line libram/verify-constants
-        back: $item`Trainbot harness`,
-        hat: $item`Crown of Thrones`,
-        // eslint-disable-next-line libram/verify-constants
-        shirt: $item`Jurassic Parka`,
-        weapon: $item`June cleaver`,
-        offhand: $item`KoL Con 13 snowglobe`,
-        pants: $item`repaid diaper`,
+        back: $item`unwrapped knock-off retro superhero cape`,
+        weapon: $item`astral pistol`,
+        offhand:
+          getKramcoWandererChance() > 0.05
+            ? $item`Kramco Sausage-o-Matic™`
+            : $item`latte lovers member's mug`,
         acc1: $item`lucky gold ring`,
-        acc2: $item`mafia thumb ring`,
-        acc3: $item`Mr. Cheeng's spectacles`,
-        modifier: "familiar weight",
+        acc2: $item`mafia pointer finger ring`,
+        acc3: $item`mafia thumb ring`,
+        familiar: $familiar`Space Jellyfish`,
+        modifier: "meat",
       },
+      combat: new CombatStrategy().macro(
+        new Macro()
+          .trySkill($skill`Bowl Straight Up`)
+          .skill($skill`Extract Jelly`)
+          .skill($skill`Sing Along`)
+          .skill($skill`Precision Shot`)
+          .skill($skill`Double Nanovision`)
+          .repeat()
+      ),
       limit: { tries: 550 },
       tracking: "GooFarming",
     },
@@ -217,25 +241,36 @@ export const GyouQuest: Quest = {
       after: ["Ascend", "Tower", ...gear.map((task) => task.name)],
       // eslint-disable-next-line libram/verify-constants
       completed: () => myAdventures() <= 40 || myClass() !== $class`Grey Goo`,
-      // eslint-disable-next-line libram/verify-constants
-      do: () => $location`Crimbo Train (Caboose)`,
-      prepare: () => cliExecute("ccs slap"),
-      outfit: {
-        familiar: $familiar`Temporal Riftlet`,
-        // eslint-disable-next-line libram/verify-constants
-        back: $item`Trainbot harness`,
-        hat: $item`Crown of Thrones`,
-        // eslint-disable-next-line libram/verify-constants
-        shirt: $item`Jurassic Parka`,
-        weapon: $item`June cleaver`,
-        offhand: $item`KoL Con 13 snowglobe`,
-        pants: $item`repaid diaper`,
-        acc1: $item`lucky gold ring`,
-        acc2: $item`mafia thumb ring`,
-        acc3: $item`Mr. Cheeng's spectacles`,
-        famequip: $item`razor fang`,
+      prepare: (): void => {
+        restoreMp(10);
+
+        // Prepare Asdon buff
+        if (AsdonMartin.installed() && !have($effect`Driving Observantly`))
+          AsdonMartin.drive(AsdonMartin.Driving.Observantly);
       },
-      limit: { tries: 350 },
+      do: $location`Barf Mountain`,
+      outfit: {
+        modifier: "meat",
+        weapon: $item`haiku katana`,
+        offhand:
+          getKramcoWandererChance() > 0.05
+            ? $item`Kramco Sausage-o-Matic™`
+            : $item`latte lovers member's mug`,
+        acc1: $item`lucky gold ring`,
+        acc2: $item`mafia pointer finger ring`,
+        familiar: $familiar`Space Jellyfish`,
+      },
+      effects: $effects`How to Scam Tourists`,
+      combat: new CombatStrategy().macro(
+        new Macro()
+          .trySkill($skill`Bowl Straight Up`)
+          .skill($skill`Extract Jelly`)
+          .skill($skill`Sing Along`)
+          .skill($skill`Summer Siesta`)
+          .skill($skill`Double Nanovision`)
+          .repeat()
+      ),
+      limit: { tries: 150 },
       tracking: "GooFarming",
     },
     {
@@ -258,8 +293,8 @@ export const GyouQuest: Quest = {
     ...garbo(
       ["Ascend", "Prism", "Pull All", "Level", "Breakfast"],
       true,
-      isHalloween ? "garboween ascend" : "railo ascend",
-      isHalloween ? "garboween ascend" : "railo ascend"
+      isHalloween ? "garboween ascend" : "garbo yachtzeechain ascend",
+      isHalloween ? "garboween ascend" : "garbo ascend"
     ),
     ...pvp(["Overdrunk"]),
   ],
