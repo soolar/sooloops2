@@ -201,8 +201,8 @@ export const CasualQuest: Quest = {
       isHalloween ? "garboween" : "garbo yachtzeechain",
       isHalloween ? "garboween" : undefined
     ),
-    ...pvp(["Overdrink"], false),
-    ...cleanup(["Overdrink"]),
+    ...pvp(["Ascend", "Overdrink"], false),
+    ...cleanup(["Ascend", "Overdrink"]),
     {
       name: "Chateau Sleep",
       after: ["Ascend", "Overdrink", "Fights"],
