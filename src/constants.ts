@@ -1,7 +1,7 @@
 import { visitUrl } from "kolmafia";
 import { $item, get } from "libram";
 
-export const acceptablePvpStances = ["Freshest Taste"];
+export const acceptablePvpStances = ["Freshest Taste", "Ready to Melt"];
 
 export const isHalloween = visitUrl("place.php?whichplace=town&action=town_trickortreat").includes(
   "Trick-or-Treating"
