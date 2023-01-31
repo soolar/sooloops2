@@ -6,13 +6,9 @@ import {
   getWorkshed,
   haveEffect,
   hippyStoneBroken,
-  inebrietyLimit,
   isAccessible,
   Item,
   itemAmount,
-  myAdventures,
-  myFamiliar,
-  myInebriety,
   sellPrice,
   sellsItem,
   toInt,
@@ -22,7 +18,6 @@ import {
 import {
   $class,
   $effect,
-  $effects,
   $familiar,
   $item,
   $items,
@@ -37,8 +32,8 @@ import {
 } from "libram";
 import { drive } from "libram/dist/resources/2017/AsdonMartin";
 import { getCurrentLeg, Leg, Quest, Task } from "./structure";
-import { breakfast, canEat, duplicate, garbo, pvp, stooperDrunk } from "./aftercore";
-import { isHalloween, voaSober } from "../constants";
+import { breakfast, garbo, pvp} from "./aftercore";
+import { isHalloween} from "../constants";
 
 function cleanup(after: string[]): Task[] {
   const oneDayTickets = $items`one-day ticket to The Glaciest, one-day ticket to Dinseylandfill, one-day ticket to That 70s Volcano, Merc Core deployment orders, one-day ticket to Spring Break Beach`;
@@ -126,7 +121,7 @@ export const CasualQuest: Quest = {
     {
       name: "Ascend",
       completed: () => getCurrentLeg() >= Leg.Casual,
-      after: ["Grey You/Overdrunk", "Grey You/Fights"],
+      after: ["Community Service/Overdrunk", "Community Service/Fights"],
       do: (): void => {
         prepareAscension({
           workshed: "Asdon Martin keyfob",
@@ -179,7 +174,7 @@ export const CasualQuest: Quest = {
       name: "Run",
       after: ["Ascend", "Break Stone", "Guild Leader", "Meat Golem"],
       completed: () => step("questL13Final") > 11,
-      do: () => cliExecute("loopcasual fluffers=false stomach=10"),
+      do: () => cliExecute("loopcasual fluffers=false stomach=10 liver=15"),
       limit: { tries: 1 },
       tracking: "Run",
     },

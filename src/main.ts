@@ -1,7 +1,7 @@
 import { print } from "kolmafia";
 import { Args, getTasks } from "grimoire-kolmafia";
 import { AftercoreQuest } from "./tasks/aftercore";
-import { GyouQuest } from "./tasks/greyyou";
+import { CSQuest } from "./tasks/greyyou";
 import { CasualQuest } from "./tasks/casual";
 import { ProfitTrackingEngine } from "./engine/engine";
 
@@ -20,7 +20,7 @@ export function main(command?: string): void {
     return;
   }
 
-  const tasks = getTasks([AftercoreQuest, GyouQuest, CasualQuest]);
+  const tasks = getTasks([AftercoreQuest, CSQuest, CasualQuest]);
 
   // Abort during the prepare() step of the specified task
   if (args.abort) {

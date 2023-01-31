@@ -10,12 +10,14 @@ export type Quest = BaseQuest<Task>;
 
 export enum Leg {
   Aftercore = 0,
-  GreyYou = 1,
+  CommunityService = 1,
   Casual = 2,
 }
 
 export function getCurrentLeg(): number {
-  if (myDaycount() > 1) return Leg.Aftercore;
-  if (myPath() == "Grey You" || get("gooseReprocessed") !== "") return Leg.GreyYou;
+  if (myDaycount() > 1)
+		return Leg.Aftercore;
+  if (myPath() === "Community Service" || get("csServicesPerformed") !== "")
+    return Leg.CommunityService;
   return Leg.Casual;
 }
