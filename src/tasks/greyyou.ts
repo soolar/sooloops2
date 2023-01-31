@@ -1,15 +1,6 @@
 import { step } from "grimoire-kolmafia";
-import {
-  cliExecute,
-  hippyStoneBroken,
-  myStorageMeat,
-  storageAmount,
-  visitUrl,
-} from "kolmafia";
-import {
-  $item,
-  get,
-} from "libram";
+import { cliExecute, hippyStoneBroken, myStorageMeat, storageAmount, visitUrl } from "kolmafia";
+import { $item, get } from "libram";
 import { getCurrentLeg, Leg, Quest } from "./structure";
 import { breakfast, garbo, pvp } from "./aftercore";
 import { isHalloween } from "../constants";
