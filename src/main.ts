@@ -1,7 +1,7 @@
 import { print } from "kolmafia";
 import { Args, getTasks } from "grimoire-kolmafia";
 import { AftercoreQuest } from "./tasks/aftercore";
-import { CSQuest } from "./tasks/greyyou";
+import { CSQuest } from "./tasks/communityservice";
 import { CasualQuest } from "./tasks/casual";
 import { ProfitTrackingEngine } from "./engine/engine";
 
