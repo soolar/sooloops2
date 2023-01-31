@@ -2,7 +2,6 @@ import { print } from "kolmafia";
 import { Args, getTasks } from "grimoire-kolmafia";
 import { AftercoreQuest } from "./tasks/aftercore";
 import { CSQuest } from "./tasks/communityservice";
-import { CasualQuest } from "./tasks/casual";
 import { ProfitTrackingEngine } from "./engine/engine";
 
 export const args = Args.create("loop", "A script for a full loop.", {
@@ -20,7 +19,7 @@ export function main(command?: string): void {
     return;
   }
 
-  const tasks = getTasks([AftercoreQuest, CSQuest, CasualQuest]);
+  const tasks = getTasks([AftercoreQuest, CSQuest]);
 
   // Abort during the prepare() step of the specified task
   if (args.abort) {
