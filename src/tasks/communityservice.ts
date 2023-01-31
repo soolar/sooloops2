@@ -7,7 +7,6 @@ import { isHalloween } from "../constants";
 
 export const CSQuest: Quest = {
   name: "Community Service",
-  completed: () => getCurrentLeg() > Leg.CommunityService,
   tasks: [
     {
       name: "Ascend",
@@ -19,6 +18,7 @@ export const CSQuest: Quest = {
     {
       name: "Break Stone",
       completed: () => hippyStoneBroken(),
+      after: ["Ascend"],
       do: (): void => {
         const smashText = visitUrl("peevpee.php?action=smashstone&pwd&confirm=on", true);
         if (smashText.indexOf("Pledge allegiance to") >= 0) {
@@ -30,8 +30,7 @@ export const CSQuest: Quest = {
     {
       name: "Run",
       after: ["Ascend", "Break Stone"],
-      completed: () =>
-        step("questL13Final") !== -1 && get("csServicesPerformed").split(",").length >= 11,
+      completed: () => get("csServicesPerformed").split(",").length >= 11,
       do: () => cliExecute("phccs"),
       limit: { tries: 1 },
       tracking: "Run",

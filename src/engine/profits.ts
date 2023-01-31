@@ -335,14 +335,6 @@ export function printProfits(records: Records): void {
   printProfitSegment("* Garbo", records["1@Garbo"], "green");
   printProfitSegment("* Other", records["1@Other"], "green");
   printProfitSegment(
-    "Casual",
-    sum(records, (key) => key.startsWith("2")),
-    "blue"
-  );
-  printProfitSegment("* Run", records["2@Run"], "green");
-  printProfitSegment("* Garbo", records["2@Garbo"], "green");
-  printProfitSegment("* Other", records["2@Other"], "green");
-  printProfitSegment(
     "Total",
     sum(records, () => true),
     "black"

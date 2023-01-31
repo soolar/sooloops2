@@ -15,8 +15,7 @@ export enum Leg {
 }
 
 export function getCurrentLeg(): number {
-  if (myDaycount() > 1)
-		return Leg.Aftercore;
+  if (myDaycount() > 1) return Leg.Aftercore;
   if (myPath() === "Community Service" || get("csServicesPerformed") !== "")
     return Leg.CommunityService;
   return Leg.Casual;
