@@ -32,10 +32,10 @@ import {
 } from "libram";
 import { drive } from "libram/dist/resources/2017/AsdonMartin";
 import { getCurrentLeg, Leg, Quest, Task } from "./structure";
-import { breakfast, garbo, pvp} from "./aftercore";
-import { isHalloween} from "../constants";
+import { breakfast, garbo, pvp } from "./aftercore";
+import { isHalloween } from "../constants";
 
-function cleanup(after: string[]): Task[] {
+export function cleanup(after: string[]): Task[] {
   const oneDayTickets = $items`one-day ticket to The Glaciest, one-day ticket to Dinseylandfill, one-day ticket to That 70s Volcano, Merc Core deployment orders, one-day ticket to Spring Break Beach`;
   const ticketSeller = (ticket: Item) =>
     Coinmaster.all().find((coinmaster) => sellsItem(coinmaster, ticket));
@@ -92,7 +92,7 @@ function cleanup(after: string[]): Task[] {
       },
       limit: { tries: 1 },
     },
-    {
+    /*{
       name: "Wad Up",
       completed: () => powersAndNuggies.filter((it) => itemAmount(it) >= 5).length === 0,
       after: after,
@@ -110,6 +110,27 @@ function cleanup(after: string[]): Task[] {
             );
           }
         }),
+      limit: { tries: 1 },
+    },*/
+    {
+      name: "Chateau Sleep",
+      after: ["Ascend", "Overdrink", "Fights"],
+      completed: () =>
+        !ChateauMantegna.have() || ChateauMantegna.getCeiling() === "artificial skylight",
+      do: () => ChateauMantegna.changeCeiling("artificial skylight"),
+      limit: { tries: 1 },
+    },
+    {
+      name: "Sleep",
+      completed: () => haveInCampground($item`clockwork maid`),
+      after: ["Ascend", "Overdrink", "Fights"],
+      do: (): void => {
+        if (!haveInCampground($item`clockwork maid`)) {
+          if (!have($item`clockwork maid`)) buy(1, $item`clockwork maid`, 48000);
+          use($item`clockwork maid`);
+        }
+      },
+      outfit: { modifier: "adv,0.7fites", familiar: $familiar`Left-Hand Man` },
       limit: { tries: 1 },
     },
   ];
@@ -198,26 +219,5 @@ export const CasualQuest: Quest = {
     ),
     ...pvp(["Ascend", "Overdrink"], false),
     ...cleanup(["Ascend", "Overdrink"]),
-    {
-      name: "Chateau Sleep",
-      after: ["Ascend", "Overdrink", "Fights"],
-      completed: () =>
-        !ChateauMantegna.have() || ChateauMantegna.getCeiling() === "artificial skylight",
-      do: () => ChateauMantegna.changeCeiling("artificial skylight"),
-      limit: { tries: 1 },
-    },
-    {
-      name: "Sleep",
-      completed: () => haveInCampground($item`clockwork maid`),
-      after: ["Ascend", "Overdrink", "Fights"],
-      do: (): void => {
-        if (!haveInCampground($item`clockwork maid`)) {
-          if (!have($item`clockwork maid`)) buy(1, $item`clockwork maid`, 48000);
-          use($item`clockwork maid`);
-        }
-      },
-      outfit: { modifier: "adv,0.7fites", familiar: $familiar`Left-Hand Man` },
-      limit: { tries: 1 },
-    },
   ],
 };

@@ -4,6 +4,7 @@ import { $item, get } from "libram";
 import { getCurrentLeg, Leg, Quest } from "./structure";
 import { breakfast, garbo, pvp } from "./aftercore";
 import { isHalloween } from "../constants";
+import { cleanup } from "./casual";
 
 export const CSQuest: Quest = {
   name: "Community Service",
@@ -38,7 +39,7 @@ export const CSQuest: Quest = {
     {
       name: "Pull All",
       after: ["Ascend", "Run"],
-      completed: () => myStorageMeat() === 0 && storageAmount($item`Law of Averages`) === 0, // arbitrary item,
+      completed: () => myStorageMeat() === 0 && storageAmount($item`Law of Averages`) === 0, // arbitrary item
       do: (): void => {
         cliExecute("pull all");
         cliExecute("refresh all");
@@ -49,10 +50,11 @@ export const CSQuest: Quest = {
     ...breakfast(["Ascend", "Run", "Pull All"]),
     ...garbo(
       ["Ascend", "Run", "Pull All", "Breakfast"],
-      true,
-      isHalloween ? "garboween ascend" : "garbo yachtzeechain ascend",
-      isHalloween ? "garboween ascend" : "garbo ascend"
+      false,
+      isHalloween ? "garboween" : "garbo yachtzeechain",
+      isHalloween ? "garboween" : undefined
     ),
-    ...pvp(["Overdrunk"]),
+    ...pvp(["Overdrink"], false),
+    ...cleanup(["Ascend", "Overdrink", "Fights"]),
   ],
 };
