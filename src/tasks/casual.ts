@@ -211,12 +211,7 @@ export const CasualQuest: Quest = {
       limit: { tries: 1 },
     },
     ...breakfast(["Ascend", "Run"]),
-    ...garbo(
-      ["Ascend", "Run", "Workshed", "Breakfast"],
-      false,
-      isHalloween ? "garboween" : "garbo yachtzeechain",
-      isHalloween ? "garboween" : undefined
-    ),
+    ...garbo(["Ascend", "Run", "Workshed", "Breakfast"], false),
     ...pvp(["Ascend", "Overdrink"], false),
     ...cleanup(["Ascend", "Overdrink"]),
   ],

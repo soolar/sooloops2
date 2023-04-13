@@ -25,6 +25,7 @@ import {
   todayToString,
   toInt,
   use,
+  useFamiliar,
   useSkill,
   visitUrl,
 } from "kolmafia";
@@ -41,7 +42,15 @@ import {
   set,
   uneffect,
 } from "libram";
-import { acceptablePvpStances, isHalloween, melfDupeItem, voaDrunk } from "../constants";
+import {
+  acceptablePvpStances,
+  isHalloween,
+  melfDupeItem,
+  voaDrunk,
+  voaGarbo,
+  voaHalloween,
+  voaSober,
+} from "../constants";
 import { getCurrentLeg, Leg, Quest, Task } from "./structure";
 
 export function canEat(): boolean {
@@ -131,7 +140,8 @@ export function duplicate(after: string[]): Task[] {
   ];
 }
 
-export function garbo(after: string[], ascending: boolean, sober: string, drunk?: string): Task[] {
+export function garbo(after: string[], ascending: boolean): Task[] {
+  const mainTaskName = isHalloween ? "Freecandy" : "Garbo";
   return [
     {
       name: "Rain-Doh",
@@ -140,24 +150,57 @@ export function garbo(after: string[], ascending: boolean, sober: string, drunk?
       do: () => use($item`can of Rain-Doh`),
       limit: { tries: 1 },
     },
-    {
-      name: "Garbo",
-      after: [...after, "Rain-Doh"],
-      completed: () => (myAdventures() === 0 && !canEat()) || stooperDrunk(),
-      do: () => cliExecute(sober),
-      limit: { tries: 1 },
-      tracking: "Garbo",
-    },
+    ...(isHalloween
+      ? [
+          {
+            name: "Garboween",
+            after: [...after, "Rain-Doh"],
+            completed: () =>
+              false /* TODO: Figure out how to determine this. Check digitize wanderer perhaps? */,
+            do: () => cliExecute(`garboween${ascending ? " ascend" : ""}`),
+            limit: { tries: 1 },
+            tracking: "Garbo",
+            prepare: () => set("valueOfAdventure", voaHalloween),
+            post: () => set("valueOfAdventure", voaGarbo),
+          },
+          {
+            name: "Set Freecandy Familiar",
+            after: [...after, "Garboween"],
+            completed: () => myFamiliar() === $familiar`Reagnimated Gnome`,
+            do: () => useFamiliar($familiar`Reagnimated Gnome`),
+            limit: { tries: 1 },
+          },
+          {
+            name: "Freecandy",
+            after: [...after, "Garboween", "Set Freecandy Familiar"],
+            completed: () => (myAdventures() < 5 && !canEat()) || stooperDrunk(),
+            do: () => cliExecute("freecandy"),
+            limit: { tries: 1 },
+            tracking: "Freecandy",
+            prepare: () => set("valueOfAdventure", voaHalloween),
+            post: () => set("valueOfAdventure", voaGarbo),
+          },
+        ]
+      : [
+          {
+            name: "Garbo",
+            after: [...after, "Rain-Doh"],
+            completed: () => (myAdventures() === 0 && !canEat()) || stooperDrunk(),
+            do: () => cliExecute(`garbo yachtzeechain ${ascending ? " ascend" : ""}`),
+            limit: { tries: 1 },
+            tracking: "Garbo",
+          },
+        ]),
     {
       name: "Wish",
-      after: [...after, "Garbo"],
+      after: [...after, mainTaskName],
       completed: () => get("_genieWishesUsed") >= 3 || !have($item`genie bottle`),
       do: () => cliExecute(`genie wish for more wishes`),
       limit: { tries: 3 },
     },
     {
       name: "Stooper",
-      after: [...after, "Garbo", "Wish"],
+      after: [...after, mainTaskName, "Wish"],
       do: () => cliExecute("drink stillsuit distillate"),
       completed: () => stooperDrunk(),
       outfit: { familiar: $familiar`Stooper` },
@@ -205,14 +248,36 @@ export function garbo(after: string[], ascending: boolean, sober: string, drunk?
       },
       limit: { tries: 1 },
     },
-    ...(drunk
+    ...(isHalloween
+      ? [
+          {
+            name: "Set Drunk Freecandy Familiar",
+            prepare: () => uneffect($effect`Drenched in Lava`),
+            after: [...after, "Overdrink", "Duplicate"],
+            completed: () => myFamiliar() === $familiar`Reagnimated Gnome`,
+            do: () => useFamiliar($familiar`Reagnimated Gnome`),
+            limit: { tries: 1 },
+          },
+          {
+            name: "Drunk Freecandy",
+            after: [...after, "Overdrink", "Set Drunk Freecandy Familiar"],
+            completed: () => myAdventures() < 5 && myInebriety() > inebrietyLimit(),
+            do: () => cliExecute("freecandy"),
+            limit: { tries: 1 },
+            tracking: "Freecandy",
+            prepare: () => set("valueOfAdventure", voaHalloween),
+            post: () => set("valueOfAdventure", voaGarbo),
+          },
+        ]
+      : []),
+    ...(ascending
       ? [
           {
             name: "Overdrunk",
-            after: [...after, "Overdrink", "Duplicate"],
+            after: [...after, "Overdrink", isHalloween ? "Drunk Freecandy" : "Duplicate"],
             prepare: () => uneffect($effect`Drenched in Lava`),
             completed: () => myAdventures() === 0 && myInebriety() > inebrietyLimit(),
-            do: () => cliExecute(drunk),
+            do: () => cliExecute(`garbo${ascending ? " ascend" : ""}`),
             limit: { tries: 1 },
             tracking: "Garbo",
           },
@@ -270,14 +335,5 @@ export function pvp(after: string[], ascend = true): Task[] {
 export const AftercoreQuest: Quest = {
   name: "Aftercore",
   completed: () => getCurrentLeg() > Leg.Aftercore,
-  tasks: [
-    ...breakfast([]),
-    ...garbo(
-      ["Breakfast"],
-      true,
-      isHalloween ? "garboween ascend" : "garbo yachtzeechain ascend",
-      isHalloween ? "garboween ascend" : "garbo ascend"
-    ),
-    ...pvp(["Overdrunk"]),
-  ],
+  tasks: [...breakfast([]), ...garbo(["Breakfast"], true), ...pvp(["Overdrunk"])],
 };
