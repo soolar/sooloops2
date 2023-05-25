@@ -34,6 +34,7 @@ import { drive } from "libram/dist/resources/2017/AsdonMartin";
 import { getCurrentLeg, Leg, Quest, Task } from "./structure";
 import { breakfast, garbo, pvp } from "./aftercore";
 import { isHalloween } from "../constants";
+import { addPtrackBreakpoint } from "../engine/profits";
 
 export function cleanup(after: string[]): Task[] {
   const oneDayTickets = $items`one-day ticket to The Glaciest, one-day ticket to Dinseylandfill, one-day ticket to That 70s Volcano, Merc Core deployment orders, one-day ticket to Spring Break Beach`;
@@ -54,10 +55,11 @@ export function cleanup(after: string[]): Task[] {
   const powersAndNuggies = $items`twinkly powder, hot powder, cold powder, spooky powder, stench powder, sleaze powder, twinkly nuggets, hot nuggets, cold nuggets, spooky nuggets, stench nuggets, sleaze nuggets`;
 
   return [
+    addPtrackBreakpoint("Pre-Cleanup", after),
     {
       name: "Buy One-Day Tickets",
       completed: () => oneDayTickets.filter((ticket) => ticketsToBuy(ticket) > 0).length === 0,
-      after: after,
+      after: [...after, "Breakpoint Pre-Cleanup"],
       do: () =>
         oneDayTickets
           .filter((ticket) => ticketsToBuy(ticket) > 0)
@@ -72,7 +74,7 @@ export function cleanup(after: string[]): Task[] {
     {
       name: "Smash Barrels",
       completed: () => barrelCount() === 0,
-      after: after,
+      after: [...after, "Breakpoint Pre-Cleanup"],
       do: (): void => {
         if (barrelCount() > 1) {
           const firstBarrel = barrels.find((barrel) => itemAmount(barrel) > 0);
@@ -112,6 +114,12 @@ export function cleanup(after: string[]): Task[] {
         }),
       limit: { tries: 1 },
     },*/
+    addPtrackBreakpoint("Post-Cleanup", [
+      ...after,
+      "Breakpoint Pre-Cleanup",
+      "Buy One-Day Tickets",
+      "Smash Barrels",
+    ]),
     {
       name: "Chateau Sleep",
       after: ["Ascend", "Overdrink", "Fights"],
@@ -210,9 +218,9 @@ export const CasualQuest: Quest = {
       },
       limit: { tries: 1 },
     },
-    ...breakfast(["Ascend", "Run"]),
-    ...garbo(["Ascend", "Run", "Workshed", "Breakfast"], false),
-    ...pvp(["Ascend", "Overdrink"], false),
+    ...breakfast("Casual", ["Ascend", "Run"]),
+    ...garbo("Casual", ["Ascend", "Run", "Workshed", "Breakfast"], false),
+    ...pvp("Casual", ["Ascend", "Overdrink"], false),
     ...cleanup(["Ascend", "Overdrink"]),
   ],
 };

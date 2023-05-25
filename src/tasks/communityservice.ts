@@ -3,6 +3,8 @@ import { $item, get } from "libram";
 import { getCurrentLeg, Leg, Quest } from "./structure";
 import { breakfast, garbo, pvp } from "./aftercore";
 import { cleanup } from "./casual";
+import { addPtrackBreakpoint } from "../engine/profits";
+import { isHalloween } from "../constants";
 
 export const CSQuest: Quest = {
   name: "Community Service",
@@ -26,17 +28,19 @@ export const CSQuest: Quest = {
       },
       limit: { tries: 1 },
     },
+    addPtrackBreakpoint("Pre-CS-Run", ["Ascend", "Break Stone"]),
     {
       name: "Run",
-      after: ["Ascend", "Break Stone"],
+      after: ["Ascend", "Break Stone", "Breakpoint Pre-CS-Run"],
       completed: () => get("csServicesPerformed").split(",").length >= 11,
       do: () => cliExecute("phccs"),
       limit: { tries: 1 },
       tracking: "Run",
     },
+    addPtrackBreakpoint("Post-CS-Run", ["Ascend", "Run"]),
     {
       name: "Pull All",
-      after: ["Ascend", "Run"],
+      after: ["Ascend", "Run", "Breakpoint Post-CS-Run"],
       completed: () => myStorageMeat() === 0 && storageAmount($item`Law of Averages`) === 0, // arbitrary item
       do: (): void => {
         cliExecute("pull all");
@@ -45,9 +49,13 @@ export const CSQuest: Quest = {
       limit: { tries: 1 },
       tracking: "Run",
     },
-    ...breakfast(["Ascend", "Run", "Pull All"]),
-    ...garbo(["Ascend", "Run", "Pull All", "Breakfast"], false),
-    ...pvp(["Overdrink"], false),
+    ...breakfast("CS", ["Ascend", "Run", "Pull All"]),
+    ...garbo("CS", ["Ascend", "Run", "Pull All", "Breakfast"], false),
+    ...pvp(
+      "CS",
+      ["Ascend", "Run", "Pull All", "Breakfast", isHalloween ? "Freecandy" : "Garbo", "Overdrink"],
+      false
+    ),
     ...cleanup(["Ascend", "Overdrink", "Fights"]),
   ],
 };

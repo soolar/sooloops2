@@ -1,5 +1,7 @@
+import { Task } from "../tasks/structure";
 import {
   autosellPrice,
+  cliExecute,
   Coinmaster,
   gamedayToInt,
   gametimeToInt,
@@ -10,10 +12,25 @@ import {
   myTurncount,
   print,
   sellPrice,
+  todayToString,
   toInt,
 } from "kolmafia";
 import { $item, $items, get, getSaleValue, Session, set, sumNumbers } from "libram";
 import { isHalloween } from "../constants";
+
+export function addPtrackBreakpoint(breakpointName: string, after: string[]): Task {
+  return {
+    name: `Breakpoint ${breakpointName}`,
+    after,
+    completed: () =>
+      get("prusias_profitTracking_date", "") === todayToString() &&
+      !!get("thoth19_event_list", "")
+        .split(",")
+        .find((breakpoint) => breakpoint === breakpointName),
+    do: () => cliExecute(`ptrack add ${breakpointName}`),
+    limit: { tries: 1 },
+  };
+}
 
 function currency(...items: Item[]): () => number {
   const unitCost: [Item, number][] = items.map((i) => {
@@ -346,4 +363,7 @@ export function printProfits(records: Records): void {
     sum(records, () => true),
     "black"
   );
+  print("");
+  print("Now for the hopefully better profit tracking...", "blue");
+  cliExecute("ptrack recap");
 }

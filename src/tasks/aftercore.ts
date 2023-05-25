@@ -51,6 +51,7 @@ import {
   voaHalloween,
   voaSober,
 } from "../constants";
+import { addPtrackBreakpoint } from "../engine/profits";
 import { getCurrentLeg, Leg, Quest, Task } from "./structure";
 
 export function canEat(): boolean {
@@ -69,7 +70,7 @@ export function stooperDrunk(): boolean {
   );
 }
 
-export function breakfast(after: string[]): Task[] {
+export function breakfast(section: string, after: string[]): Task[] {
   return [
     {
       name: "Old Man",
@@ -81,9 +82,10 @@ export function breakfast(after: string[]): Task[] {
       },
       limit: { tries: 1 },
     },
+    addPtrackBreakpoint(`${section}-Pre-Breakfast`, [...after, "Old Man"]),
     {
       name: "Breakfast",
-      after: [...after, "Old Man"],
+      after: [...after, `Breakpoint ${section}-Pre-Breakfast`],
       completed: () => get("breakfastCompleted"),
       do: () => cliExecute("breakfast"),
       limit: { tries: 1 },
@@ -140,7 +142,7 @@ export function duplicate(after: string[]): Task[] {
   ];
 }
 
-export function garbo(after: string[], ascending: boolean): Task[] {
+export function garbo(section: string, after: string[], ascending: boolean): Task[] {
   const mainTaskName = isHalloween ? "Freecandy" : "Garbo";
   return [
     {
@@ -152,9 +154,10 @@ export function garbo(after: string[], ascending: boolean): Task[] {
     },
     ...(isHalloween
       ? [
+          addPtrackBreakpoint(`${section}-Pre-Garboween`, [...after, "Rain-Doh"]),
           {
             name: "Garboween",
-            after: [...after, "Rain-Doh"],
+            after: [...after, `Breakpoint ${section}-Pre-Garboween`],
             completed: () =>
               false /* TODO: Figure out how to determine this. Check digitize wanderer perhaps? */,
             do: () => cliExecute(`garboween${ascending ? " ascend" : ""}`),
@@ -163,6 +166,7 @@ export function garbo(after: string[], ascending: boolean): Task[] {
             prepare: () => set("valueOfAdventure", voaHalloween),
             post: () => set("valueOfAdventure", voaGarbo),
           },
+          addPtrackBreakpoint(`${section}-Pre-Freecandy`, [...after, "Garboween"]),
           {
             name: "Set Freecandy Familiar",
             after: [...after, "Garboween"],
@@ -172,7 +176,12 @@ export function garbo(after: string[], ascending: boolean): Task[] {
           },
           {
             name: "Freecandy",
-            after: [...after, "Garboween", "Set Freecandy Familiar"],
+            after: [
+              ...after,
+              "Garboween",
+              `Breakpoint ${section}-Pre-Freecandy`,
+              "Set Freecandy Familiar",
+            ],
             completed: () => (myAdventures() < 5 && !canEat()) || stooperDrunk(),
             do: () => cliExecute("freecandy"),
             limit: { tries: 1 },
@@ -180,16 +189,19 @@ export function garbo(after: string[], ascending: boolean): Task[] {
             prepare: () => set("valueOfAdventure", voaHalloween),
             post: () => set("valueOfAdventure", voaGarbo),
           },
+          addPtrackBreakpoint(`${section}-Post-Freecandy`, [...after, "Freecandy"]),
         ]
       : [
+          addPtrackBreakpoint(`${section}-Pre-Garbo`, [...after, "Rain-Doh"]),
           {
             name: "Garbo",
-            after: [...after, "Rain-Doh"],
+            after: [...after, `Breakpoint ${section}-Pre-Garbo`],
             completed: () => (myAdventures() === 0 && !canEat()) || stooperDrunk(),
             do: () => cliExecute(`garbo yachtzeechain ${ascending ? " ascend" : ""}`),
             limit: { tries: 1 },
             tracking: "Garbo",
           },
+          addPtrackBreakpoint(`${section}-Post-Garbo`, [...after, "Garbo"]),
         ]),
     {
       name: "Wish",
@@ -250,6 +262,11 @@ export function garbo(after: string[], ascending: boolean): Task[] {
     },
     ...(isHalloween
       ? [
+          addPtrackBreakpoint(`${section}-Pre-Drunk-Freecandy`, [
+            ...after,
+            "Overdrink",
+            "Duplicate",
+          ]),
           {
             name: "Set Drunk Freecandy Familiar",
             prepare: () => uneffect($effect`Drenched in Lava`),
@@ -260,7 +277,12 @@ export function garbo(after: string[], ascending: boolean): Task[] {
           },
           {
             name: "Drunk Freecandy",
-            after: [...after, "Overdrink", "Set Drunk Freecandy Familiar"],
+            after: [
+              ...after,
+              "Overdrink",
+              `Breakpoint ${section}-Pre-Drunk-Freecandy`,
+              "Set Drunk Freecandy Familiar",
+            ],
             completed: () => myAdventures() < 5 && myInebriety() > inebrietyLimit(),
             do: () => cliExecute("freecandy"),
             limit: { tries: 1 },
@@ -272,21 +294,27 @@ export function garbo(after: string[], ascending: boolean): Task[] {
       : []),
     ...(ascending
       ? [
+          addPtrackBreakpoint(`${section}-Pre-Overdrunk-Garbo`, [
+            ...after,
+            "Overdrink",
+            isHalloween ? "Drunk Freecandy" : "Duplicate",
+          ]),
           {
             name: "Overdrunk",
-            after: [...after, "Overdrink", isHalloween ? "Drunk Freecandy" : "Duplicate"],
+            after: [...after, "Overdrink", `Breakpoint ${section}-Pre-Overdrunk-Garbo`],
             prepare: () => uneffect($effect`Drenched in Lava`),
             completed: () => myAdventures() === 0 && myInebriety() > inebrietyLimit(),
             do: () => cliExecute(`garbo${ascending ? " ascend" : ""}`),
             limit: { tries: 1 },
             tracking: "Garbo",
           },
+          addPtrackBreakpoint(`${section}-Post-Overdrunk-Garbo`, [...after, "Overdrunk"]),
         ]
       : []),
   ];
 }
 
-export function pvp(after: string[], ascend = true): Task[] {
+export function pvp(section: string, after: string[], ascend = true): Task[] {
   const todayStr = formatDateTime("yyyyMMdd", todayToString(), "MMdd");
   const year = toInt(formatDateTime("yyyyMMdd", todayToString(), "yyyy"));
   const isLeap = (year % 4 === 0 && year % 100 !== 0) || year % 400 === 0;
@@ -307,9 +335,10 @@ export function pvp(after: string[], ascend = true): Task[] {
   const fitesToUse = () => (useAll ? pvpAttacksLeft() : excessFites());
 
   return [
+    addPtrackBreakpoint(`${section}-Pre-Fights`, after),
     {
       name: "Fights",
-      after: after,
+      after: [...after, `Breakpoint ${section}-Pre-Fights`],
       ready: () => hippyStoneBroken(),
       do: () => {
         cliExecute("unequip");
@@ -325,15 +354,34 @@ export function pvp(after: string[], ascend = true): Task[] {
         const toUse = fitesToUse();
         cliExecute(`pvp${toUse > 0 ? ` ${toUse}` : ""} loot ${stance}`);
       },
-      completed: () => fitesToUse() <= 0,
+      // skip fights during null season, not the end of the world
+      completed: () => fitesToUse() <= 0 || Object.keys(currentPvpStances()).length === 0,
       limit: { tries: 1 },
       post: () => cliExecute("refresh inv"),
     },
+    addPtrackBreakpoint(`${section}-Post-Fights`, [...after, "Fights"]),
   ];
 }
 
 export const AftercoreQuest: Quest = {
   name: "Aftercore",
   completed: () => getCurrentLeg() > Leg.Aftercore,
-  tasks: [...breakfast([]), ...garbo(["Breakfast"], true), ...pvp(["Overdrunk"])],
+  tasks: [
+    // So the script doesn't break the day after a pvp season change
+    {
+      name: "Break Stone",
+      completed: () => hippyStoneBroken(),
+      after: [],
+      do: (): void => {
+        const smashText = visitUrl("peevpee.php?action=smashstone&pwd&confirm=on", true);
+        if (smashText.indexOf("Pledge allegiance to") >= 0) {
+          visitUrl("peevpee.php?action=pledge&place=fight&pwd");
+        }
+      },
+      limit: { tries: 1 },
+    },
+    ...breakfast("Aftercore", []),
+    ...garbo("Aftercore", ["Breakfast"], true),
+    ...pvp("Aftercore", ["Overdrunk"]),
+  ],
 };
