@@ -11,6 +11,9 @@ export const args = Args.create("loop", "A script for a full loop.", {
   abort: Args.string({
     help: "If given, abort during the prepare() step for the task with matching name.",
   }),
+  nocs: Args.flag({
+    help: "If given, only do the aftercore quests, don't jump in to CS afterwards.",
+  }),
 });
 export function main(command?: string): void {
   Args.fill(args, command);
@@ -19,7 +22,12 @@ export function main(command?: string): void {
     return;
   }
 
-  const tasks = getTasks([AftercoreQuest, CSQuest]);
+  const quests = [AftercoreQuest];
+  if (!args.nocs) {
+    quests.push(CSQuest);
+  }
+
+  const tasks = getTasks(quests);
 
   // Abort during the prepare() step of the specified task
   if (args.abort) {
