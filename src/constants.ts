@@ -1,4 +1,4 @@
-import { visitUrl } from "kolmafia";
+import { holiday, visitUrl } from "kolmafia";
 import { $item, get } from "libram";
 
 export const acceptablePvpStances = [
@@ -6,13 +6,15 @@ export const acceptablePvpStances = [
   "Ready to Melt",
   "Thirrrsty forrr Booze",
   "Lightest Load",
+  "Fashion Show",
+  "Freshman Rule!",
+  "All Bundled Up",
+  "Safari Chic",
 ];
 
-export const isHalloween = visitUrl("place.php?whichplace=town&action=town_trickortreat").includes(
-  "Trick-or-Treating"
-);
+export const isHalloween = holiday().includes("Halloween");
 
-export const voaHalloween = 21169;
+export const voaHalloween = 16169;
 export const voaGarbo = get("valueOfAdventure");
 export const voaSober = isHalloween ? voaHalloween : voaGarbo;
 export const voaDrunk = isHalloween ? voaHalloween : Math.round(voaSober * 0.7);

@@ -19,6 +19,7 @@ import { $item, $items, get, getSaleValue, Session, set, sumNumbers } from "libr
 import { isHalloween } from "../constants";
 
 export function addPtrackBreakpoint(breakpointName: string, after: string[]): Task {
+  const lowerName = breakpointName.toLowerCase();
   return {
     name: `Breakpoint ${breakpointName}`,
     after,
@@ -26,8 +27,8 @@ export function addPtrackBreakpoint(breakpointName: string, after: string[]): Ta
       get("prusias_profitTracking_date", "") === todayToString() &&
       !!get("thoth19_event_list", "")
         .split(",")
-        .find((breakpoint) => breakpoint === breakpointName),
-    do: () => cliExecute(`ptrack add ${breakpointName}`),
+        .find((breakpoint) => breakpoint === lowerName),
+    do: () => cliExecute(`ptrack add ${lowerName}`),
     limit: { tries: 1 },
   };
 }

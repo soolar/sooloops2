@@ -158,8 +158,7 @@ export function garbo(section: string, after: string[], ascending: boolean): Tas
           {
             name: "Garboween",
             after: [...after, `Breakpoint ${section}-Pre-Garboween`],
-            completed: () =>
-              false /* TODO: Figure out how to determine this. Check digitize wanderer perhaps? */,
+            completed: () => get("_sourceTerminalDigitizeUses") > 0,
             do: () => cliExecute(`garboween${ascending ? " ascend" : ""}`),
             limit: { tries: 1 },
             tracking: "Garbo",
@@ -197,7 +196,7 @@ export function garbo(section: string, after: string[], ascending: boolean): Tas
             name: "Garbo",
             after: [...after, `Breakpoint ${section}-Pre-Garbo`],
             completed: () => (myAdventures() === 0 && !canEat()) || stooperDrunk(),
-            do: () => cliExecute(`garbo yachtzeechain ${ascending ? " ascend" : ""}`),
+            do: () => cliExecute(`garbo${ascending ? " ascend" : ""}`),
             limit: { tries: 1 },
             tracking: "Garbo",
           },
@@ -262,15 +261,11 @@ export function garbo(section: string, after: string[], ascending: boolean): Tas
     },
     ...(isHalloween
       ? [
-          addPtrackBreakpoint(`${section}-Pre-Drunk-Freecandy`, [
-            ...after,
-            "Overdrink",
-            "Duplicate",
-          ]),
+          addPtrackBreakpoint(`${section}-Pre-Drunk-Freecandy`, [...after, "Overdrink"]),
           {
             name: "Set Drunk Freecandy Familiar",
             prepare: () => uneffect($effect`Drenched in Lava`),
-            after: [...after, "Overdrink", "Duplicate"],
+            after: [...after, "Overdrink"],
             completed: () => myFamiliar() === $familiar`Reagnimated Gnome`,
             do: () => useFamiliar($familiar`Reagnimated Gnome`),
             limit: { tries: 1 },
@@ -304,7 +299,7 @@ export function garbo(section: string, after: string[], ascending: boolean): Tas
             after: [...after, "Overdrink", `Breakpoint ${section}-Pre-Overdrunk-Garbo`],
             prepare: () => uneffect($effect`Drenched in Lava`),
             completed: () => myAdventures() === 0 && myInebriety() > inebrietyLimit(),
-            do: () => cliExecute(`garbo${ascending ? " ascend" : ""}`),
+            do: () => cliExecute("garbo ascend"),
             limit: { tries: 1 },
             tracking: "Garbo",
           },
