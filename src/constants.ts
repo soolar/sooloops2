@@ -10,6 +10,7 @@ export const acceptablePvpStances = [
   "Freshman Rule!",
   "All Bundled Up",
   "Safari Chic",
+  "Optimal Dresser",
 ];
 
 export const isHalloween = holiday().includes("Halloween");
