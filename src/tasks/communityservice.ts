@@ -56,6 +56,6 @@ export const CSQuest: Quest = {
       ["Ascend", "Run", "Pull All", "Breakfast", isHalloween ? "Freecandy" : "Garbo", "Overdrink"],
       false
     ),
-    ...cleanup(["Ascend", "Overdrink", "Fights"]),
+    ...cleanup(["Ascend", "Overdrink", "Fights"], true),
   ],
 };

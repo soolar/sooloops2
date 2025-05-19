@@ -3,6 +3,7 @@ import { Args, getTasks } from "grimoire-kolmafia";
 import { AftercoreQuest } from "./tasks/aftercore";
 import { CSQuest } from "./tasks/communityservice";
 import { ProfitTrackingEngine } from "./engine/engine";
+import { NoCSQuest } from "./tasks/nocs";
 
 export const args = Args.create("loop", "A script for a full loop.", {
   actions: Args.number({
@@ -23,9 +24,7 @@ export function main(command?: string): void {
   }
 
   const quests = [AftercoreQuest];
-  if (!args.nocs) {
-    quests.push(CSQuest);
-  }
+  quests.push(args.nocs ? NoCSQuest : CSQuest);
 
   const tasks = getTasks(quests);
 

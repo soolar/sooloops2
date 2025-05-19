@@ -159,7 +159,10 @@ export function garbo(section: string, after: string[], ascending: boolean): Tas
             name: "Garboween",
             after: [...after, `Breakpoint ${section}-Pre-Garboween`],
             completed: () => get("_sourceTerminalDigitizeUses") > 0,
-            do: () => cliExecute(`garboween${ascending ? " ascend" : ""}`),
+            do: () =>
+              cliExecute(
+                `garbo${ascending ? " ascend" : ""} nodiet nobarf target="witchess knight"`
+              ),
             limit: { tries: 1 },
             tracking: "Garbo",
             prepare: () => set("valueOfAdventure", voaHalloween),
