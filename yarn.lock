@@ -1286,16 +1286,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@babel/runtime-corejs3@npm:^7.17.2":
-  version: 7.18.9
-  resolution: "@babel/runtime-corejs3@npm:7.18.9"
-  dependencies:
-    core-js-pure: "npm:^3.20.2"
-    regenerator-runtime: "npm:^0.13.4"
-  checksum: 10c0/5218e4df9b52b60231afa1e3f5c0e54d6c2167a466d1ecbc1603b19c7a6f73fb755d4bd021f87f3706d704029f7cd2e20a13445dd3b0a62886bb3b041fc6623d
-  languageName: node
-  linkType: hard
-
 "@babel/runtime@npm:^7.8.4":
   version: 7.18.9
   resolution: "@babel/runtime@npm:7.18.9"
@@ -2384,14 +2374,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"core-js-pure@npm:^3.20.2":
-  version: 3.23.5
-  resolution: "core-js-pure@npm:3.23.5"
-  checksum: 10c0/c63d48ba02dcb334846c34e7defa2f1472e4d67a455dcc4b574db096a6e19f8bceb79fe78ba8fe85a608516f90a8f72d572cf0131b2e2661af6d186ad84c5921
-  languageName: node
-  linkType: hard
-
-"core-js@npm:^3.16.4, core-js@npm:^3.21.0":
+"core-js@npm:^3.16.4":
   version: 3.23.5
   resolution: "core-js@npm:3.23.5"
   checksum: 10c0/ab9b483ede285b3949e2411f9190d147ac589d111b0aa3a4b2999a1bf2755b3e930529c2a22ff550efd4fc154c7cfae700bee858dedff905a09f35ddbcc6425f
@@ -3062,15 +3045,15 @@ __metadata:
   languageName: node
   linkType: hard
 
-"grimoire-kolmafia@npm:0.3.5":
-  version: 0.3.5
-  resolution: "grimoire-kolmafia@npm:0.3.5"
+"grimoire-kolmafia@npm:^0.3.29":
+  version: 0.3.29
+  resolution: "grimoire-kolmafia@npm:0.3.29"
   dependencies:
     core-js: "npm:^3.16.4"
   peerDependencies:
-    kolmafia: ^3.4.0
-    libram: ^0.6.24
-  checksum: 10c0/d435b1fa573320bfc167f41571c4c2198c8f34ae051beed56a8c90d3145604b18324d32172471d7a69cf632099d2c74bdce8849395d52f07c51553e4b0ed5f15
+    kolmafia: ^5.28100.0
+    libram: ^0.10.0
+  checksum: 10c0/9b34e4bfd44492e79c1c0105b42d159168115c98b01688ac949f066f7da7dba441e5a0159489b8cc56b871ba80918a797847ff7931f4da381811dba535896a46
   languageName: node
   linkType: hard
 
@@ -3117,6 +3100,13 @@ __metadata:
   version: 2.3.3
   resolution: "html-entities@npm:2.3.3"
   checksum: 10c0/a76cbdbb276d9499dc7ef800d23f3964254e659f04db51c8d1ff6abfe21992c69b7217ecfd6e3c16ff0aa027ba4261d77f0dba71f55639c16a325bbdf69c535d
+  languageName: node
+  linkType: hard
+
+"html-entities@npm:^2.5.2":
+  version: 2.6.0
+  resolution: "html-entities@npm:2.6.0"
+  checksum: 10c0/7c8b15d9ea0cd00dc9279f61bab002ba6ca8a7a0f3c36ed2db3530a67a9621c017830d1d2c1c65beb9b8e3436ea663e9cf8b230472e0e413359399413b27c8b7
   languageName: node
   linkType: hard
 
@@ -3423,10 +3413,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"kolmafia@npm:3.4.0":
-  version: 3.4.0
-  resolution: "kolmafia@npm:3.4.0"
-  checksum: 10c0/2dace3362bffdd8031bcbe22be1506f28dc0edae289c533d0925146e05aa8831c3c7d332118e9de84c114581e455573384dde46a09aa3b8d748a79c164c80b7e
+"kolmafia@npm:^5.28542.0":
+  version: 5.28542.0
+  resolution: "kolmafia@npm:5.28542.0"
+  checksum: 10c0/ada5b2d1ea89fb295de6107ebfcb424d63177afbb124901b7e86e29bc15f42dc25183847f4036b210d5f35f92acdf558163bdd63c6f68993f26d2a3dd1cba557
   languageName: node
   linkType: hard
 
@@ -3440,16 +3430,14 @@ __metadata:
   languageName: node
   linkType: hard
 
-"libram@npm:0.6.24":
-  version: 0.6.24
-  resolution: "libram@npm:0.6.24"
+"libram@npm:^0.11.4":
+  version: 0.11.4
+  resolution: "libram@npm:0.11.4"
   dependencies:
-    "@babel/runtime-corejs3": "npm:^7.17.2"
-    core-js: "npm:^3.21.0"
-    lodash: "npm:^4.17.21"
+    html-entities: "npm:^2.5.2"
   peerDependencies:
-    kolmafia: ^3.4.0
-  checksum: 10c0/3be9c5ee85beba78d03c4d4f961ebe9d7e393f184a4288d9e3d16ed2585da7fd4f97dc82550fad17b055e1eb379addbb795dad34afba8d1180c78f4636202493
+    kolmafia: ^5.28100.0
+  checksum: 10c0/94798a09b76540991f8b898903d9cef6af362017f4a81d73a9a63e3b35f02f5e3609e2505b34884a1fd72c369a4f22d4da76d09a578d19fcb45364acde5d7f18
   languageName: node
   linkType: hard
 
@@ -3501,13 +3489,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"lodash@npm:^4.17.21":
-  version: 4.17.21
-  resolution: "lodash@npm:4.17.21"
-  checksum: 10c0/d8cbea072bb08655bb4c989da418994b073a608dffa608b09ac04b43a791b12aeae7cd7ad919aa4c925f33b48490b5cfe6c1f71d827956071dae2e7bb3a6b74c
-  languageName: node
-  linkType: hard
-
 "loop@workspace:.":
   version: 0.0.0-use.local
   resolution: "loop@workspace:."
@@ -3525,9 +3506,9 @@ __metadata:
     eslint: "npm:^7.32.0"
     eslint-config-prettier: "npm:^8.3.0"
     eslint-plugin-libram: "npm:^0.2.14"
-    grimoire-kolmafia: "npm:0.3.5"
-    kolmafia: "npm:3.4.0"
-    libram: "npm:0.6.24"
+    grimoire-kolmafia: "npm:^0.3.29"
+    kolmafia: "npm:^5.28542.0"
+    libram: "npm:^0.11.4"
     prettier: "npm:^2.3.2"
     typescript: "npm:^4.4.2"
     webpack: "npm:^5.61.0"

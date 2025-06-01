@@ -49,7 +49,6 @@ import {
   voaDrunk,
   voaGarbo,
   voaHalloween,
-  voaSober,
 } from "../constants";
 import { addPtrackBreakpoint } from "../engine/profits";
 import { getCurrentLeg, Leg, Quest, Task } from "./structure";
@@ -95,6 +94,13 @@ export function breakfast(section: string, after: string[]): Task[] {
       after: [...after, "Breakfast"],
       completed: () => get("_pirateBellowUsed"),
       do: () => useSkill($skill`Pirate Bellow`),
+      limit: { tries: 1 },
+    },
+    {
+      name: "Imperil",
+      after: [...after, "Breakfast"],
+      completed: () => get("_perilsForeseen") >= 3,
+      do: () => cliExecute("imperil"),
       limit: { tries: 1 },
     },
   ];
@@ -177,12 +183,23 @@ export function garbo(section: string, after: string[], ascending: boolean): Tas
             limit: { tries: 1 },
           },
           {
+            name: "Pre-candy Consumption",
+            after: [...after, "Garboween", "Set Freecandy Familiar"],
+            completed: () =>
+              myFullness() >= fullnessLimit() &&
+              myInebriety() >= inebrietyLimit() &&
+              mySpleenUse() >= spleenLimit(),
+            do: () => cliExecute(`CONSUME ALL NOMEAT VALUE ${voaHalloween} ALLOWLIFETIMELIMITED`),
+            limit: { tries: 1 },
+          },
+          {
             name: "Freecandy",
             after: [
               ...after,
               "Garboween",
               `Breakpoint ${section}-Pre-Freecandy`,
               "Set Freecandy Familiar",
+              "Pre-candy Consumption",
             ],
             completed: () => (myAdventures() < 5 && !canEat()) || stooperDrunk(),
             do: () => cliExecute("freecandy"),
@@ -241,7 +258,8 @@ export function garbo(section: string, after: string[], ascending: boolean): Tas
     {
       name: "Overdrink",
       after: [...after, "Stooper"],
-      do: () => cliExecute(`CONSUME NIGHTCAP NOMEAT VALUE ${voaDrunk}`),
+      do: () =>
+        cliExecute(`CONSUME NIGHTCAP NOMEAT VALUE ${isHalloween ? voaHalloween : voaDrunk}`),
       completed: () =>
         myInebriety() > inebrietyLimit() + (myFamiliar() !== $familiar`Stooper` ? 1 : 0),
       limit: { tries: 1 },

@@ -21,19 +21,19 @@ import {
   $familiar,
   $item,
   $items,
+  $path,
   ascend,
   ChateauMantegna,
   get,
   have,
   haveInCampground,
+  KolGender,
   Lifestyle,
-  Paths,
   prepareAscension,
 } from "libram";
 import { drive } from "libram/dist/resources/2017/AsdonMartin";
 import { getCurrentLeg, Leg, Quest, Task } from "./structure";
 import { breakfast, garbo, pvp } from "./aftercore";
-import { isHalloween } from "../constants";
 import { addPtrackBreakpoint } from "../engine/profits";
 
 export function cleanup(after: string[], afterCS: boolean): Task[] {
@@ -51,8 +51,6 @@ export function cleanup(after: string[], afterCS: boolean): Task[] {
   const barrels = $items`little firkin, normal barrel, big tun, weathered barrel, dusty barrel, disintegrating barrel, moist barrel, rotting barrel, mouldering barrel, barnacled barrel`;
   const barrelCount = () =>
     barrels.map((barrel) => itemAmount(barrel)).reduce((total, current) => total + current, 0);
-
-  const powersAndNuggies = $items`twinkly powder, hot powder, cold powder, spooky powder, stench powder, sleaze powder, twinkly nuggets, hot nuggets, cold nuggets, spooky nuggets, stench nuggets, sleaze nuggets`;
 
   return [
     addPtrackBreakpoint("Pre-Cleanup", after),
@@ -94,26 +92,6 @@ export function cleanup(after: string[], afterCS: boolean): Task[] {
       },
       limit: { tries: 1 },
     },
-    /*{
-      name: "Wad Up",
-      completed: () => powersAndNuggies.filter((it) => itemAmount(it) >= 5).length === 0,
-      after: after,
-      prepare: () => {
-        // Finish unlocking guild
-        visitUrl("guild.php?place=challenge");
-        visitUrl("guild.php?place=malus");
-      },
-      do: () =>
-        powersAndNuggies.forEach((it) => {
-          // Can't use .filter because this might change as a result of prior smashing
-          if (itemAmount(it) >= 5) {
-            visitUrl(
-              `guild.php?action=malussmash&pwd&whichitem=${toInt(it)}&quantity=1&smashall=1`
-            );
-          }
-        }),
-      limit: { tries: 1 },
-    },*/
     addPtrackBreakpoint("Post-Cleanup", [
       ...after,
       "Breakpoint Pre-Cleanup",
@@ -157,7 +135,6 @@ export const CasualQuest: Quest = {
       after: ["Community Service/Overdrunk", "Community Service/Fights"],
       do: (): void => {
         prepareAscension({
-          workshed: "Asdon Martin keyfob",
           garden: "packet of thanksgarden seeds",
           eudora: "GameInformPowerDailyPro subscription card",
           chateau: {
@@ -167,14 +144,15 @@ export const CasualQuest: Quest = {
           },
         });
 
-        ascend(
-          Paths.Unrestricted,
-          $class`Seal Clubber`,
-          Lifestyle.casual,
-          "knoll",
-          $item`astral six-pack`,
-          $item`astral pet sweater`
-        );
+        ascend({
+          path: $path`Unrestricted`,
+          playerClass: $class`Seal Clubber`,
+          lifestyle: Lifestyle.casual,
+          kolGender: KolGender.male,
+          moon: "knoll",
+          consumable: $item`astral six-pack`,
+          pet: $item`astral pet sweater`,
+        });
       },
       limit: { tries: 1 },
     },

@@ -1,4 +1,4 @@
-import { holiday, visitUrl } from "kolmafia";
+import { holiday } from "kolmafia";
 import { $item, get } from "libram";
 
 export const acceptablePvpStances = [
