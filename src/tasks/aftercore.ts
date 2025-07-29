@@ -52,6 +52,7 @@ import {
 } from "../constants";
 import { addPtrackBreakpoint } from "../engine/profits";
 import { getCurrentLeg, Leg, Quest, Task } from "./structure";
+import { args } from "../main";
 
 export function canEat(): boolean {
   return (
@@ -149,7 +150,7 @@ export function duplicate(after: string[]): Task[] {
 }
 
 export function garbo(section: string, after: string[], ascending: boolean): Task[] {
-  const mainTaskName = isHalloween ? "Freecandy" : "Garbo";
+  const mainTaskName = isHalloween ? "Freecandy" : args.ttt ? "Chrono" : "Garbo";
   return [
     {
       name: "Rain-Doh",
@@ -209,6 +210,28 @@ export function garbo(section: string, after: string[], ascending: boolean): Tas
             post: () => set("valueOfAdventure", voaGarbo),
           },
           addPtrackBreakpoint(`${section}-Post-Freecandy`, [...after, "Freecandy"]),
+        ]
+      : args.ttt
+      ? [
+          addPtrackBreakpoint(`${section}-Pre-Garbo-NoBarf`, [...after, "Rain-Doh"]),
+          {
+            name: "Garbo-NoBarf",
+            after: [...after, `Breakpoint ${section}-Pre-Garbo-NoBarf`],
+            completed: () => get("_sourceTerminalDigitizeUses") > 0,
+            do: () => cliExecute(`garbo nobarf${ascending ? " ascend" : ""}`),
+            limit: { tries: 1 },
+            tracking: "Garbo",
+          },
+          addPtrackBreakpoint(`${section}-Pre-Chrono`, [...after, "Garbo-NoBarf"]),
+          {
+            name: "Chrono",
+            after: [...after, `Breakpoint ${section}-Pre-Chrono`],
+            completed: () => (myAdventures() === 0 && !canEat()) || stooperDrunk(),
+            do: () => cliExecute("chrono"),
+            limit: { tries: 1 },
+            tracking: "Chrono",
+          },
+          addPtrackBreakpoint(`${section}-Post-Chrono`, [...after, "Chrono"]),
         ]
       : [
           addPtrackBreakpoint(`${section}-Pre-Garbo`, [...after, "Rain-Doh"]),

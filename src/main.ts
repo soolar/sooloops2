@@ -15,6 +15,9 @@ export const args = Args.create("loop", "A script for a full loop.", {
   nocs: Args.flag({
     help: "If given, only do the aftercore quests, don't jump in to CS afterwards.",
   }),
+  ttt: Args.flag({
+    help: "If given, try to farm TTT instead of barf mountain. If it's not there, explode instead.",
+  }),
 });
 export function main(command?: string): void {
   Args.fill(args, command);
