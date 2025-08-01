@@ -4,7 +4,7 @@ import { getCurrentLeg, Leg, Quest } from "./structure";
 import { breakfast, garbo, pvp } from "./aftercore";
 import { cleanup } from "./casual";
 import { addPtrackBreakpoint } from "../engine/profits";
-import { isHalloween } from "../constants";
+import { doTTT, isHalloween } from "../constants";
 
 export const CSQuest: Quest = {
   name: "Community Service",
@@ -53,7 +53,14 @@ export const CSQuest: Quest = {
     ...garbo("CS", ["Ascend", "Run", "Pull All", "Breakfast"], false),
     ...pvp(
       "CS",
-      ["Ascend", "Run", "Pull All", "Breakfast", isHalloween ? "Freecandy" : "Garbo", "Overdrink"],
+      [
+        "Ascend",
+        "Run",
+        "Pull All",
+        "Breakfast",
+        isHalloween ? "Freecandy" : doTTT ? "Chrono" : "Garbo",
+        "Overdrink",
+      ],
       false
     ),
     ...cleanup(["Ascend", "Overdrink", "Fights"], true),

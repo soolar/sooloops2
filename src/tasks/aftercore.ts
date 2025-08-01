@@ -44,6 +44,7 @@ import {
 } from "libram";
 import {
   acceptablePvpStances,
+  doTTT,
   isHalloween,
   melfDupeItem,
   voaDrunk,
@@ -52,7 +53,6 @@ import {
 } from "../constants";
 import { addPtrackBreakpoint } from "../engine/profits";
 import { getCurrentLeg, Leg, Quest, Task } from "./structure";
-import { args } from "../main";
 
 export function canEat(): boolean {
   return (
@@ -150,7 +150,7 @@ export function duplicate(after: string[]): Task[] {
 }
 
 export function garbo(section: string, after: string[], ascending: boolean): Task[] {
-  const mainTaskName = isHalloween ? "Freecandy" : args.ttt ? "Chrono" : "Garbo";
+  const mainTaskName = isHalloween ? "Freecandy" : doTTT ? "Chrono" : "Garbo";
   return [
     {
       name: "Rain-Doh",
@@ -211,7 +211,7 @@ export function garbo(section: string, after: string[], ascending: boolean): Tas
           },
           addPtrackBreakpoint(`${section}-Post-Freecandy`, [...after, "Freecandy"]),
         ]
-      : args.ttt
+      : doTTT
       ? [
           addPtrackBreakpoint(`${section}-Pre-Garbo-NoBarf`, [...after, "Rain-Doh"]),
           {

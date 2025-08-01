@@ -22,3 +22,5 @@ export const voaSober = isHalloween ? voaHalloween : voaGarbo;
 export const voaDrunk = isHalloween ? voaHalloween : Math.round(voaSober * 0.7);
 
 export const melfDupeItem = $item`Daily Affirmation: Always be Collecting`;
+
+export const doTTT = false;
