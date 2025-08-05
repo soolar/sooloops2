@@ -381,7 +381,7 @@ export function pvp(section: string, after: string[], ascend = true): Task[] {
       ready: () => hippyStoneBroken(),
       do: () => {
         cliExecute("unequip");
-        cliExecute("UberPvPOptimizer");
+        cliExecute("pvpprep");
         const stance = Object.keys(currentPvpStances()).find(
           (stance) => acceptablePvpStances.find((acceptable) => stance === acceptable) !== undefined
         );
