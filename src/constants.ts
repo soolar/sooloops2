@@ -12,6 +12,7 @@ export const acceptablePvpStances = [
   "Safari Chic",
   "Optimal Dresser",
   "Motivated by Irony",
+  "ASCII-7 of the moment",
 ];
 
 export const isHalloween = holiday().includes("Halloween");
