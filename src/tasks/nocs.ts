@@ -1,4 +1,4 @@
-import { cleanup } from "./casual";
+import { cleanup } from "./communityservice";
 import { Quest } from "./structure";
 
 export const NoCSQuest: Quest = {

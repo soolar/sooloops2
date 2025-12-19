@@ -44,6 +44,7 @@ import {
 } from "libram";
 import {
   acceptablePvpStances,
+  doCrimbo,
   doTTT,
   isHalloween,
   melfDupeItem,
@@ -150,7 +151,7 @@ export function duplicate(after: string[]): Task[] {
 }
 
 export function garbo(section: string, after: string[], ascending: boolean): Task[] {
-  const mainTaskName = isHalloween ? "Freecandy" : doTTT ? "Chrono" : "Garbo";
+  const mainTaskName = isHalloween ? "Freecandy" : doTTT ? "Chrono" : doCrimbo ? "Crimbo" : "Garbo";
   return [
     {
       name: "Rain-Doh",
@@ -211,27 +212,52 @@ export function garbo(section: string, after: string[], ascending: boolean): Tas
           },
           addPtrackBreakpoint(`${section}-Post-Freecandy`, [...after, "Freecandy"]),
         ]
-      : doTTT
+      : doTTT || doCrimbo
       ? [
-          addPtrackBreakpoint(`${section}-Pre-Garbo-NoBarf`, [...after, "Rain-Doh"]),
+          {
+            name: "Pre-garbo Consumption",
+            after: [...after, "Rain-Doh"],
+            completed: () =>
+              myFullness() >= fullnessLimit() &&
+              myInebriety() >= inebrietyLimit() &&
+              mySpleenUse() >= spleenLimit(),
+            do: () => cliExecute(`CONSUME ALL NOMEAT ALLOWLIFETIMELIMITED`),
+            limit: { tries: 1 },
+          },
+          addPtrackBreakpoint(`${section}-Pre-Garbo-NoBarf`, [...after, "Pre-garbo Consumption"]),
           {
             name: "Garbo-NoBarf",
             after: [...after, `Breakpoint ${section}-Pre-Garbo-NoBarf`],
             completed: () => get("_sourceTerminalDigitizeUses") > 0,
-            do: () => cliExecute(`garbo nobarf${ascending ? " ascend" : ""}`),
+            do: () => cliExecute(`garbo nobarf nodiet${ascending ? " ascend" : ""}`),
             limit: { tries: 1 },
             tracking: "Garbo",
           },
-          addPtrackBreakpoint(`${section}-Pre-Chrono`, [...after, "Garbo-NoBarf"]),
-          {
-            name: "Chrono",
-            after: [...after, `Breakpoint ${section}-Pre-Chrono`],
-            completed: () => (myAdventures() === 0 && !canEat()) || stooperDrunk(),
-            do: () => cliExecute("chrono"),
-            limit: { tries: 1 },
-            tracking: "Chrono",
-          },
-          addPtrackBreakpoint(`${section}-Post-Chrono`, [...after, "Chrono"]),
+          ...(doTTT
+            ? [
+                addPtrackBreakpoint(`${section}-Pre-Chrono`, [...after, "Garbo-NoBarf"]),
+                {
+                  name: "Chrono",
+                  after: [...after, `Breakpoint ${section}-Pre-Chrono`],
+                  completed: () => (myAdventures() === 0 && !canEat()) || stooperDrunk(),
+                  do: () => cliExecute("chrono"),
+                  limit: { tries: 1 },
+                  tracking: "Chrono",
+                },
+                addPtrackBreakpoint(`${section}-Post-Chrono`, [...after, "Chrono"]),
+              ]
+            : [
+                addPtrackBreakpoint(`${section}-Pre-Crimbo`, [...after, "Garbo-NoBarf"]),
+                {
+                  name: "Crimbo",
+                  after: [...after, `Breakpoint ${section}-Pre-Crimbo`],
+                  completed: () => (myAdventures() === 0 && !canEat()) || stooperDrunk(),
+                  do: () => cliExecute(`crimbo${ascending ? " ascend" : ""}`),
+                  limit: { tries: 1 },
+                  tracking: "Crimbo",
+                },
+                addPtrackBreakpoint(`${section}-Post-Crimbo`, [...after, "Crimbo"]),
+              ]),
         ]
       : [
           addPtrackBreakpoint(`${section}-Pre-Garbo`, [...after, "Rain-Doh"]),
