@@ -3,10 +3,12 @@ import {
   buy,
   cliExecute,
   Coinmaster,
+  haveEffect,
   hippyStoneBroken,
   isAccessible,
   Item,
   itemAmount,
+  myAscensions,
   myStorageMeat,
   sellPrice,
   sellsItem,
@@ -15,13 +17,23 @@ import {
   use,
   visitUrl,
 } from "kolmafia";
-import { $familiar, $item, $items, ChateauMantegna, get, have, haveInCampground } from "libram";
+import {
+  $effect,
+  $familiar,
+  $item,
+  $items,
+  ChateauMantegna,
+  get,
+  have,
+  haveInCampground,
+  uneffect,
+} from "libram";
 import { getCurrentLeg, Leg, Quest, Task } from "./structure";
 import { breakfast, garbo, pvp } from "./aftercore";
 import { addPtrackBreakpoint } from "../engine/profits";
 import { doTTT, isHalloween } from "../constants";
 
-export function cleanup(after: string[], afterCS: boolean): Task[] {
+export function cleanup(after: string[]): Task[] {
   const oneDayTickets = $items`one-day ticket to The Glaciest, one-day ticket to Dinseylandfill, one-day ticket to That 70s Volcano, Merc Core deployment orders, one-day ticket to Spring Break Beach`;
   const ticketSeller = (ticket: Item) =>
     Coinmaster.all().find((coinmaster) => sellsItem(coinmaster, ticket));
@@ -83,31 +95,27 @@ export function cleanup(after: string[], afterCS: boolean): Task[] {
       "Buy One-Day Tickets",
       "Smash Barrels",
     ]),
-    ...(afterCS
-      ? [
-          {
-            name: "Chateau Sleep",
-            after: ["Ascend", "Overdrink", "Fights"],
-            completed: () =>
-              !ChateauMantegna.have() || ChateauMantegna.getCeiling() === "artificial skylight",
-            do: () => ChateauMantegna.changeCeiling("artificial skylight"),
-            limit: { tries: 1 },
-          },
-          {
-            name: "Sleep",
-            completed: () => haveInCampground($item`clockwork maid`),
-            after: ["Ascend", "Overdrink", "Fights"],
-            do: (): void => {
-              if (!haveInCampground($item`clockwork maid`)) {
-                if (!have($item`clockwork maid`)) buy(1, $item`clockwork maid`, 48000);
-                use($item`clockwork maid`);
-              }
-            },
-            outfit: { modifier: "adv,0.7fites", familiar: $familiar`Left-Hand Man` },
-            limit: { tries: 1 },
-          },
-        ]
-      : []),
+    {
+      name: "Chateau Sleep",
+      after: [...after, "Breakpoint Post-Cleanup"],
+      completed: () =>
+        !ChateauMantegna.have() || ChateauMantegna.getCeiling() === "artificial skylight",
+      do: () => ChateauMantegna.changeCeiling("artificial skylight"),
+      limit: { tries: 1 },
+    },
+    {
+      name: "Sleep",
+      completed: () => haveInCampground($item`clockwork maid`),
+      after: [...after, "Chateau Sleep"],
+      do: (): void => {
+        if (!haveInCampground($item`clockwork maid`)) {
+          if (!have($item`clockwork maid`)) buy(1, $item`clockwork maid`, 48000);
+          use($item`clockwork maid`);
+        }
+      },
+      outfit: { modifier: "adv,0.7fites", familiar: $familiar`Left-Hand Man` },
+      limit: { tries: 1 },
+    },
   ];
 }
 
@@ -155,9 +163,17 @@ export const CSQuest: Quest = {
       tracking: "Run",
     },
     {
+      name: "Uneffect Cowrruption",
+      after: ["Pull All"],
+      completed: () => !have($effect`Cowrruption`),
+      do: () => uneffect($effect`Cowrruption`),
+      limit: { tries: 1 },
+      tracking: "Run",
+    },
+    {
       name: "Unlock Guild",
       after: ["Ascend", "Run", "Breakpoint Post-CS-Run", "Pull All"],
-      completed: () => false,
+      completed: () => get("lastGuildStoreOpen") >= myAscensions(),
       do: (): void => {
         abort();
       },
@@ -178,6 +194,6 @@ export const CSQuest: Quest = {
       ],
       false
     ),
-    ...cleanup(["Ascend", "Overdrink", "Fights"], true),
+    ...cleanup(["Ascend", "Overdrink", "Fights"]),
   ],
 };

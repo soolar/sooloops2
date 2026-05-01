@@ -13,6 +13,7 @@ export const acceptablePvpStances = [
   "Optimal Dresser",
   "Motivated by Irony",
   "ASCII-7 of the moment",
+  "Fahrenheit 451",
 ];
 
 export const isHalloween = holiday().includes("Halloween");
@@ -25,4 +26,4 @@ export const voaDrunk = isHalloween ? voaHalloween : Math.round(voaSober * 0.7);
 export const melfDupeItem = $item`Daily Affirmation: Always be Collecting`;
 
 export const doTTT = false;
-export const doCrimbo = true;
+export const doCrimbo = false;

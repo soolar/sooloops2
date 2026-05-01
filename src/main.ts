@@ -3,7 +3,7 @@ import { Args, getTasks } from "grimoire-kolmafia";
 import { AftercoreQuest } from "./tasks/aftercore";
 import { CSQuest } from "./tasks/communityservice";
 import { ProfitTrackingEngine } from "./engine/engine";
-import { NoCSQuest } from "./tasks/nocs";
+import { CleanupQuest, NoCSQuest } from "./tasks/nocs";
 
 export const args = Args.create("loop", "A script for a full loop.", {
   actions: Args.number({
@@ -18,6 +18,9 @@ export const args = Args.create("loop", "A script for a full loop.", {
   ttt: Args.flag({
     help: "If given, try to farm TTT instead of barf mountain. If it's not there, explode instead.",
   }),
+  justclean: Args.flag({
+    help: "If given, just run the cleanup routine and then stop.",
+  }),
 });
 export function main(command?: string): void {
   Args.fill(args, command);
@@ -26,8 +29,10 @@ export function main(command?: string): void {
     return;
   }
 
-  const quests = [AftercoreQuest];
-  quests.push(args.nocs ? NoCSQuest : CSQuest);
+  const quests = args.justclean ? [CleanupQuest] : [AftercoreQuest];
+  if (!args.justclean) {
+    quests.push(args.nocs ? NoCSQuest : CSQuest);
+  }
 
   const tasks = getTasks(quests);
 

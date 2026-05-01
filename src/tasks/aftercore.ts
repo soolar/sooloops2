@@ -17,6 +17,7 @@ import {
   myInebriety,
   mySpleenUse,
   numericModifier,
+  print,
   putCloset,
   putShop,
   pvpAttacksLeft,
@@ -393,7 +394,11 @@ export function pvp(section: string, after: string[], ascend = true): Task[] {
     }
     maximize("adv,0.7fites,switch Left-Hand Man,-tie", true);
     return Math.max(
-      pvpAttacksLeft() + 10 + numericModifier("Generated:_spec", "PvP Fights") - 100,
+      pvpAttacksLeft() +
+        10 +
+        (have($effect`Offhand Remarkable`) ? 0 : 16) +
+        numericModifier("Generated:_spec", "PvP Fights") -
+        100,
       0
     );
   };
