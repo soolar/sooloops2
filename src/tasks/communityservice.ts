@@ -1,5 +1,6 @@
 import {
   abort,
+  adv1,
   buy,
   cliExecute,
   Coinmaster,
@@ -22,6 +23,7 @@ import {
   $familiar,
   $item,
   $items,
+  $location,
   ChateauMantegna,
   get,
   have,
@@ -175,7 +177,8 @@ export const CSQuest: Quest = {
       after: ["Ascend", "Run", "Breakpoint Post-CS-Run", "Pull All"],
       completed: () => get("lastGuildStoreOpen") >= myAscensions(),
       do: (): void => {
-        abort();
+        adv1($location`The Haunted Pantry`);
+        visitUrl("/guild.php?place=challenge");
       },
       limit: { tries: 1 },
       tracking: "Run",
