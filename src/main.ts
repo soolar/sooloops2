@@ -3,7 +3,7 @@ import { Args, getTasks } from "grimoire-kolmafia";
 import { AftercoreQuest } from "./tasks/aftercore";
 import { CSQuest } from "./tasks/communityservice";
 import { ProfitTrackingEngine } from "./engine/engine";
-import { CleanupQuest, NoCSQuest } from "./tasks/nocs";
+import { AftercoreQuestNoAscend, CleanupQuest, NoCSQuest } from "./tasks/nocs";
 
 export const args = Args.create("loop", "A script for a full loop.", {
   actions: Args.number({
@@ -21,6 +21,9 @@ export const args = Args.create("loop", "A script for a full loop.", {
   justclean: Args.flag({
     help: "If given, just run the cleanup routine and then stop.",
   }),
+  noascend: Args.flag({
+    help: "If given, do daily stuff without ascending. Not really a loop at that point, but whatever.",
+  }),
 });
 export function main(command?: string): void {
   Args.fill(args, command);
@@ -29,8 +32,12 @@ export function main(command?: string): void {
     return;
   }
 
-  const quests = args.justclean ? [CleanupQuest] : [AftercoreQuest];
-  if (!args.justclean) {
+  const quests = args.noascend
+    ? [AftercoreQuestNoAscend]
+    : args.justclean
+    ? [CleanupQuest]
+    : [AftercoreQuest];
+  if (!args.justclean && !args.noascend) {
     quests.push(args.nocs ? NoCSQuest : CSQuest);
   }
 

@@ -17,7 +17,6 @@ import {
   myInebriety,
   mySpleenUse,
   numericModifier,
-  print,
   putCloset,
   putShop,
   pvpAttacksLeft,
@@ -433,23 +432,25 @@ export function pvp(section: string, after: string[], ascend = true): Task[] {
   ];
 }
 
+// So the script doesn't break the day after a pvp season change
+export const breakStone = {
+  name: "Break Stone",
+  completed: () => hippyStoneBroken(),
+  after: [],
+  do: (): void => {
+    const smashText = visitUrl("peevpee.php?action=smashstone&pwd&confirm=on", true);
+    if (smashText.indexOf("Pledge allegiance to") >= 0) {
+      visitUrl("peevpee.php?action=pledge&place=fight&pwd");
+    }
+  },
+  limit: { tries: 1 },
+};
+
 export const AftercoreQuest: Quest = {
   name: "Aftercore",
   completed: () => getCurrentLeg() > Leg.Aftercore,
   tasks: [
-    // So the script doesn't break the day after a pvp season change
-    {
-      name: "Break Stone",
-      completed: () => hippyStoneBroken(),
-      after: [],
-      do: (): void => {
-        const smashText = visitUrl("peevpee.php?action=smashstone&pwd&confirm=on", true);
-        if (smashText.indexOf("Pledge allegiance to") >= 0) {
-          visitUrl("peevpee.php?action=pledge&place=fight&pwd");
-        }
-      },
-      limit: { tries: 1 },
-    },
+    breakStone,
     ...breakfast("Aftercore", []),
     ...garbo("Aftercore", ["Breakfast"], true),
     ...pvp("Aftercore", ["Overdrunk"]),
