@@ -114,6 +114,9 @@ export function cleanup(after: string[]): Task[] {
           if (!have($item`clockwork maid`)) buy(1, $item`clockwork maid`, 48000);
           use($item`clockwork maid`);
         }
+        if (!get("_aug13Cast")) {
+          cliExecute("cast Aug. 13");
+        }
       },
       outfit: { modifier: "adv,0.7fites", familiar: $familiar`Left-Hand Man` },
       limit: { tries: 1 },
@@ -127,7 +130,7 @@ export const CSQuest: Quest = {
     {
       name: "Ascend",
       completed: () => getCurrentLeg() >= Leg.CommunityService,
-      after: ["Aftercore/Overdrunk", "Aftercore/Fights"],
+      after: ["Aftercore/Overdrunk", "Aftercore/Fights", "Aftercore/Overorganed"],
       do: () => cliExecute("phccs_gash softcore"),
       limit: { tries: 1 },
     },

@@ -34,8 +34,11 @@ import {
   $effects,
   $familiar,
   $item,
+  $items,
   $location,
+  $modifier,
   $skill,
+  $slot,
   get,
   have,
   Macro,
@@ -311,6 +314,7 @@ export function garbo(section: string, after: string[], ascending: boolean): Tas
         cliExecute(`CONSUME NIGHTCAP NOMEAT VALUE ${isHalloween ? voaHalloween : voaDrunk}`),
       completed: () =>
         myInebriety() > inebrietyLimit() + (myFamiliar() !== $familiar`Stooper` ? 1 : 0),
+      outfit: { modifier: "liver", familiar: $familiar`Stooper` },
       limit: { tries: 1 },
     },
     ...duplicate([...after, "Overdrink"]),
@@ -368,7 +372,10 @@ export function garbo(section: string, after: string[], ascending: boolean): Tas
             name: "Overdrunk",
             after: [...after, "Overdrink", `Breakpoint ${section}-Pre-Overdrunk-Garbo`],
             prepare: () => uneffect($effect`Drenched in Lava`),
-            completed: () => myAdventures() === 0 && myInebriety() > inebrietyLimit(),
+            completed: () =>
+              (myAdventures() === 0 && myInebriety() > inebrietyLimit()) ||
+              myFullness() > fullnessLimit() - numericModifier($modifier`Stomach Capacity`) ||
+              mySpleenUse() > spleenLimit() - numericModifier($modifier`Spleen Capacity`),
             do: () => cliExecute("garbo ascend"),
             limit: { tries: 1 },
             tracking: "Garbo",
@@ -376,7 +383,45 @@ export function garbo(section: string, after: string[], ascending: boolean): Tas
           addPtrackBreakpoint(`${section}-Post-Overdrunk-Garbo`, [...after, "Overdrunk"]),
         ]
       : []),
+    overorgan([...after, "Overdrink", "Black Heart"]),
+    ...(ascending
+      ? [
+          addPtrackBreakpoint(`${section}-Pre-Overorganed-Garbo`, [...after, "Overorgan"]),
+          {
+            name: "Overorganed",
+            after: [...after, "Overorgan", `Breakpoint ${section}-Pre-Overorganed-Garbo`],
+            completed: () =>
+              myAdventures() === 0 &&
+              myFullness() > fullnessLimit() - numericModifier($modifier`Stomach Capacity`) &&
+              myInebriety() > inebrietyLimit() - numericModifier($modifier`Liver Capacity`) &&
+              mySpleenUse() > spleenLimit() - numericModifier($modifier`Spleen Capacity`),
+            do: $location`Barf Mountain`,
+            limit: { tries: 50 },
+            outfit: {
+              equip: $items`devilbone corset, angelbone totem, devilbone greaves, angelbone chopsticks, Drunkula's wineglass, lucky gold ring`,
+              modifier: "meat",
+              familiar: $familiar`Fist Turkey`, // just for now, for lack of a better idea of a weight/action agnostic beneficial fam
+            },
+            combat: new CombatStrategy().autoattack(Macro.attack().repeat()),
+            tracking: "Overorganed",
+          },
+          addPtrackBreakpoint(`${section}-Post-Overorganed-Garbo`, [...after, "Overorganed"]),
+        ]
+      : []),
   ];
+}
+
+export function overorgan(after: string[]): Task {
+  return {
+    name: "Overorgan",
+    after: after,
+    completed: () =>
+      myFullness() > fullnessLimit() - numericModifier($modifier`Stomach Capacity`) &&
+      mySpleenUse() > spleenLimit() - numericModifier($modifier`Spleen Capacity`),
+    do: () => cliExecute(`CONSUME ALL NOMEAT VALUE ${voaDrunk}`),
+    limit: { tries: 1 },
+    outfit: { modifier: "organs" },
+  };
 }
 
 export function pvp(section: string, after: string[], ascend = true): Task[] {
@@ -434,7 +479,7 @@ export function pvp(section: string, after: string[], ascend = true): Task[] {
 // So the script doesn't break the day after a pvp season change
 export const breakStone = {
   name: "Break Stone",
-  completed: () => hippyStoneBroken(),
+  completed: hippyStoneBroken,
   after: [],
   do: (): void => {
     const smashText = visitUrl("peevpee.php?action=smashstone&pwd&confirm=on", true);

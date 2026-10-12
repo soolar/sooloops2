@@ -18,7 +18,7 @@ export const AftercoreQuestNoAscend: Quest = {
     breakStone,
     ...breakfast("Aftercore-No-Ascend", []),
     ...garbo("Aftercore-No-Ascend", ["Breakfast"], false),
-    ...pvp("Aftercore-No-Ascend", ["Black Heart"], false),
+    ...pvp("Aftercore-No-Ascend", ["Overorganed"], false),
     ...cleanup(["Fights"]),
   ],
 };
