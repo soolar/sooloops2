@@ -5,11 +5,13 @@ import {
   cliExecute,
   closetAmount,
   currentPvpStances,
+  equippedItem,
   formatDateTime,
   fullnessLimit,
   hippyStoneBroken,
   inebrietyLimit,
   maximize,
+  Modifier,
   myAdventures,
   myAscensions,
   myFamiliar,
@@ -38,7 +40,7 @@ import {
   $location,
   $modifier,
   $skill,
-  $slot,
+  $slots,
   get,
   have,
   Macro,
@@ -72,6 +74,32 @@ export function stooperDrunk(): boolean {
     myInebriety() > inebrietyLimit() ||
     (myInebriety() === inebrietyLimit() && myFamiliar() === $familiar`Stooper`)
   );
+}
+
+export function sumGearMods(mod: Modifier): number {
+  // Skips over specialty slots like eternity codpiece jewels because no such things can provide the
+  // mods this is being used for for now...
+  return $slots`hat, back, shirt, weapon, off-hand, pants, acc1, acc2, acc3, familiar`
+    .map((slot) => equippedItem(slot))
+    .map((item) => numericModifier(item, mod))
+    .reduce((acc, val) => acc + val, 0);
+}
+
+export function overEaten(): boolean {
+  return myFullness() > fullnessLimit() - sumGearMods($modifier`Stomach Capacity`);
+}
+
+export function overDrunk(): boolean {
+  return (
+    myInebriety() >
+    inebrietyLimit() -
+      sumGearMods($modifier`Liver Capacity`) -
+      (myFamiliar() === $familiar`Stooper` ? 1 : 0)
+  );
+}
+
+export function overSpleened(): boolean {
+  return mySpleenUse() > spleenLimit() - sumGearMods($modifier`Spleen Capacity`);
 }
 
 export function breakfast(section: string, after: string[]): Task[] {
@@ -374,8 +402,8 @@ export function garbo(section: string, after: string[], ascending: boolean): Tas
             prepare: () => uneffect($effect`Drenched in Lava`),
             completed: () =>
               (myAdventures() === 0 && myInebriety() > inebrietyLimit()) ||
-              myFullness() > fullnessLimit() - numericModifier($modifier`Stomach Capacity`) ||
-              mySpleenUse() > spleenLimit() - numericModifier($modifier`Spleen Capacity`),
+              overEaten() ||
+              overSpleened(),
             do: () => cliExecute("garbo ascend"),
             limit: { tries: 1 },
             tracking: "Garbo",
@@ -383,18 +411,14 @@ export function garbo(section: string, after: string[], ascending: boolean): Tas
           addPtrackBreakpoint(`${section}-Post-Overdrunk-Garbo`, [...after, "Overdrunk"]),
         ]
       : []),
-    overorgan([...after, "Overdrink", "Black Heart"]),
+    overorgan([...after, "Overdrink", "Black Heart", ...(ascending ? ["Overdrunk"] : [])]),
     ...(ascending
       ? [
           addPtrackBreakpoint(`${section}-Pre-Overorganed-Garbo`, [...after, "Overorgan"]),
           {
             name: "Overorganed",
             after: [...after, "Overorgan", `Breakpoint ${section}-Pre-Overorganed-Garbo`],
-            completed: () =>
-              myAdventures() === 0 &&
-              myFullness() > fullnessLimit() - numericModifier($modifier`Stomach Capacity`) &&
-              myInebriety() > inebrietyLimit() - numericModifier($modifier`Liver Capacity`) &&
-              mySpleenUse() > spleenLimit() - numericModifier($modifier`Spleen Capacity`),
+            completed: () => myAdventures() === 0 && overEaten() && overDrunk() && overSpleened(),
             do: $location`Barf Mountain`,
             limit: { tries: 50 },
             outfit: {
@@ -415,9 +439,7 @@ export function overorgan(after: string[]): Task {
   return {
     name: "Overorgan",
     after: after,
-    completed: () =>
-      myFullness() > fullnessLimit() - numericModifier($modifier`Stomach Capacity`) &&
-      mySpleenUse() > spleenLimit() - numericModifier($modifier`Spleen Capacity`),
+    completed: () => overEaten() && overDrunk() && overSpleened(),
     do: () => cliExecute(`CONSUME ALL NOMEAT VALUE ${voaDrunk}`),
     limit: { tries: 1 },
     outfit: { modifier: "organs" },
