@@ -380,10 +380,11 @@ export function garbo(section: string, after: string[], ascending: boolean): Tas
               `Breakpoint ${section}-Pre-Drunk-Freecandy`,
               "Set Drunk Freecandy Familiar",
             ],
-            completed: () => myAdventures() < 5 && myInebriety() > inebrietyLimit(),
+            completed: () => (myAdventures() < 5 && overDrunk()) || overEaten() || overSpleened(),
             do: () => cliExecute("freecandy"),
             limit: { tries: 1 },
             tracking: "Freecandy",
+
             prepare: () => set("valueOfAdventure", voaHalloween),
             post: () => set("valueOfAdventure", voaGarbo),
           },
@@ -400,10 +401,7 @@ export function garbo(section: string, after: string[], ascending: boolean): Tas
             name: "Overdrunk",
             after: [...after, "Overdrink", `Breakpoint ${section}-Pre-Overdrunk-Garbo`],
             prepare: () => uneffect($effect`Drenched in Lava`),
-            completed: () =>
-              (myAdventures() === 0 && myInebriety() > inebrietyLimit()) ||
-              overEaten() ||
-              overSpleened(),
+            completed: () => (myAdventures() === 0 && overDrunk()) || overEaten() || overSpleened(),
             do: () => cliExecute("garbo ascend"),
             limit: { tries: 1 },
             tracking: "Garbo",
